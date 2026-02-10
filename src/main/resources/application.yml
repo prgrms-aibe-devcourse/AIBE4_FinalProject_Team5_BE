@@ -1,0 +1,36 @@
+server:
+    port: 8080
+    servlet:
+        encoding:
+            charset: UTF-8
+            enabled: true
+            force: true
+
+spring:
+    application:
+        name: coditor
+
+    datasource:
+        driver-class-name: com.mysql.cj.jdbc.Driver
+        url: jdbc:mysql://localhost:3306/coditor?useSSL=false&allowPublicKeyRetrieval=true&characterEncoding=UTF-8&serverTimezone=Asia/Seoul
+        username: coditor_user
+        password: coditor_pass
+
+    jpa:
+        hibernate:
+            ddl-auto: update #validate
+        show-sql: true
+        properties:
+            hibernate:
+                format_sql: true
+
+    data:
+        redis:
+            host: localhost
+            port: 6379
+
+    rabbitmq:
+        host: localhost
+        port: 5672
+        username: guest
+        password: guest

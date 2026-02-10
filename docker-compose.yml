@@ -1,0 +1,52 @@
+services:
+    # 1. Database (MySQL 8.0)
+    mysql:
+        image: mysql:8.0
+        container_name: coditor-db
+        ports:
+            - "3306:3306"
+        environment:
+            MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+            MYSQL_DATABASE: ${MYSQL_DATABASE}
+            MYSQL_USER: ${MYSQL_USER}
+            MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+            TZ: Asia/Seoul
+        command:
+            - --character-set-server=utf8mb4
+            - --collation-server=utf8mb4_unicode_ci
+        volumes:
+            - ./infra/data/mysql:/var/lib/mysql # 데이터 영구 저장
+        restart: always
+
+    # 2. Cache & Session (Redis)
+    redis:
+        image: redis:alpine
+        container_name: coditor-redis
+        ports:
+            - "6379:6379"
+        volumes:
+            - ./infra/data/redis:/data
+        restart: always
+
+    # 3. Message Queue (RabbitMQ) - 채점 요청 처리
+    rabbitmq:
+        image: rabbitmq:3-management
+        container_name: coditor-mq
+        ports:
+            - "5672:5672"   # 앱 연결 포트
+            - "15672:15672" # 관리자 웹 UI 포트
+        environment:
+            RABBITMQ_DEFAULT_USER: ${RABBITMQ_DEFAULT_USER}
+            RABBITMQ_DEFAULT_PASS: ${RABBITMQ_DEFAULT_PASS}
+        volumes:
+            - ./infra/data/rabbitmq:/var/lib/rabbitmq
+        restart: always
+
+    # 4. Tunnel (Localhost -> Public URL)
+    tunnel:
+        image: cloudflare/cloudflared:latest
+        container_name: coditor-tunnel
+        command: tunnel run
+        environment:
+            - TUNNEL_TOKEN=${TUNNEL_TOKEN}
+        restart: always
