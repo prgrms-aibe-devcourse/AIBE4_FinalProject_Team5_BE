@@ -2,6 +2,8 @@ package kr.java.coditor.domain.problem.dto;
 
 import kr.java.coditor.domain.problem.entity.Problem;
 
+import java.util.List;
+
 public record ProblemCreateRequest(
 	String title,
 	String content,
@@ -10,7 +12,8 @@ public record ProblemCreateRequest(
 	Integer level,
 	Double timeLimit,
 	Integer memoryLimit,
-	Boolean isVisible
+	Boolean isVisible,
+	List<ProblemExampleRequest> examples
 ) {
 	public Problem toEntity() {
 		return Problem.builder()

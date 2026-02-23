@@ -2,6 +2,8 @@ package kr.java.coditor.domain.problem.dto;
 
 import kr.java.coditor.domain.problem.entity.Problem;
 import java.time.LocalDateTime;
+import java.util.List;
+import java.util.stream.Collectors;
 
 public record ProblemResponse(
 	Long id,
@@ -13,7 +15,8 @@ public record ProblemResponse(
 	Double timeLimit,
 	Integer memoryLimit,
 	Boolean isVisible,
-	LocalDateTime createdAt
+	LocalDateTime createdAt,
+	List<ProblemExampleResponse> examples
 ) {
 	public static ProblemResponse from(Problem problem) {
 		return new ProblemResponse(
@@ -26,7 +29,10 @@ public record ProblemResponse(
 			problem.getTimeLimit(),
 			problem.getMemoryLimit(),
 			problem.getIsVisible(),
-			problem.getCreatedAt()
+			problem.getCreatedAt(),
+			problem.getExamples().stream()
+				.map(ProblemExampleResponse::from)
+				.collect(Collectors.toList())
 		);
 	}
 }
