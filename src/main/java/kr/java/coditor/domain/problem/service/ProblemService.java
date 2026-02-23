@@ -3,6 +3,7 @@ package kr.java.coditor.domain.problem.service;
 import kr.java.coditor.domain.problem.dto.ProblemCreateRequest;
 import kr.java.coditor.domain.problem.dto.ProblemResponse;
 import kr.java.coditor.domain.problem.dto.ProblemUpdateRequest;
+import kr.java.coditor.domain.problem.dto.TagResponse;
 import kr.java.coditor.domain.problem.entity.Problem;
 import kr.java.coditor.domain.problem.entity.ProblemExample;
 import kr.java.coditor.domain.problem.entity.ProblemTag;
@@ -53,7 +54,7 @@ public class ProblemService {
 		if (request.tags() != null && !request.tags().isEmpty()) {
 			for (String tagName : request.tags()) {
 				Tag tag = tagRepository.findByName(tagName)
-					.orElseGet(() -> tagRepository.save(new Tag(tagName)));
+					.orElseThrow(() -> new ProblemException(ProblemErrorCode.TAG_NOT_FOUND));
 
 				ProblemTag problemTag = new ProblemTag(problem, tag);
 				problem.addProblemTag(problemTag);
@@ -85,7 +86,7 @@ public class ProblemService {
 	@Transactional(readOnly = true)
 	public List<ProblemResponse> getAllProblems() {
 		List<Problem> problems = problemRepository.findAll();
-		log.debug("전체 문제 목록 조회 - 총 {}건", problems.size());
+		log.info("전체 문제 목록 조회 - 총 {}건", problems.size());
 		return problems.stream()
 			.map(ProblemResponse::from)
 			.collect(Collectors.toList());
@@ -131,7 +132,7 @@ public class ProblemService {
 			List<ProblemTag> newProblemTags = request.tags().stream()
 				.map(tagName -> {
 					Tag tag = tagRepository.findByName(tagName)
-						.orElseGet(() -> tagRepository.save(new Tag(tagName)));
+						.orElseThrow(() -> new ProblemException(ProblemErrorCode.TAG_NOT_FOUND));
 					return new ProblemTag(problem, tag);
 				})
 				.collect(Collectors.toList());
@@ -157,5 +158,14 @@ public class ProblemService {
 			.orElseThrow(() -> new ProblemException(ProblemErrorCode.PROBLEM_NOT_FOUND));
 		problemRepository.delete(problem);
 		log.info("문제 삭제 완료 - Problem ID: {}", problemId);
+	}
+
+	@Transactional(readOnly = true)
+	public List<TagResponse> getAllTags() {
+		List<Tag> tags = tagRepository.findAll();
+		log.info("전체 태그 목록 조회 - 총 {}건", tags.size());
+		return tags.stream()
+			.map(TagResponse::from)
+			.collect(Collectors.toList());
 	}
 }
