@@ -2,6 +2,7 @@ package kr.java.coditor.domain.problem.service;
 
 import kr.java.coditor.domain.problem.dto.ProblemCreateRequest;
 import kr.java.coditor.domain.problem.dto.ProblemResponse;
+import kr.java.coditor.domain.problem.dto.ProblemUpdateRequest;
 import kr.java.coditor.domain.problem.entity.Problem;
 import kr.java.coditor.domain.problem.repository.ProblemRepository;
 import lombok.RequiredArgsConstructor;
@@ -58,5 +59,48 @@ public class ProblemService {
 		return problems.stream()
 			.map(ProblemResponse::from)
 			.collect(Collectors.toList());
+	}
+
+	/**
+	 * [관리자] 문제 부분 수정
+	 */
+	@Transactional
+	public ProblemResponse updateProblem(Long adminId, Long problemId, ProblemUpdateRequest request) {
+		// 임시 권한 체크
+		if (!adminId.equals(1L)) {
+			log.warn("권한 없는 사용자의 문제 수정 시도 - User ID: {}", adminId);
+			throw new IllegalStateException("관리자만 접근할 수 있습니다.");
+		}
+		Problem problem = problemRepository.findById(problemId)
+			.orElseThrow(() -> new IllegalArgumentException("해당 문제를 찾을 수 없습니다. ID: " + problemId));
+		// 부분 업데이트 수행
+		problem.update(
+			request.title(),
+			request.content(),
+			request.inputDesc(),
+			request.outputDesc(),
+			request.level(),
+			request.timeLimit(),
+			request.memoryLimit(),
+			request.isVisible()
+		);
+		log.info("문제 수정 완료 - Problem ID: {}", problem.getId());
+		return ProblemResponse.from(problem);
+	}
+
+	/**
+	 * [관리자] 문제 삭제
+	 */
+	@Transactional
+	public void deleteProblem(Long adminId, Long problemId) {
+		// 임시 권한 체크
+		if (!adminId.equals(1L)) {
+			log.warn("권한 없는 사용자의 문제 삭제 시도 - User ID: {}", adminId);
+			throw new IllegalStateException("관리자만 접근할 수 있습니다.");
+		}
+		Problem problem = problemRepository.findById(problemId)
+			.orElseThrow(() -> new IllegalArgumentException("해당 문제를 찾을 수 없습니다. ID: " + problemId));
+		problemRepository.delete(problem);
+		log.info("문제 삭제 완료 - Problem ID: {}", problemId);
 	}
 }

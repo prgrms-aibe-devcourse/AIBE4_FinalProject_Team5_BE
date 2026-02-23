@@ -61,4 +61,19 @@ public class Problem {
 	public void prePersist() {
 		this.createdAt = LocalDateTime.now();
 	}
+
+	/**
+	 * 문제 부분 수정
+	 */
+	public void update(String title, String content, String inputDesc, String outputDesc,
+					   Integer level, Double timeLimit, Integer memoryLimit, Boolean isVisible) {
+		if (title != null) this.title = title;
+		if (content != null) this.content = content;
+		if (inputDesc != null) this.inputDesc = inputDesc;
+		if (outputDesc != null) this.outputDesc = outputDesc;
+		if (level != null) this.level = level;
+		if (timeLimit != null) this.timeLimit = timeLimit;
+		if (memoryLimit != null) this.memoryLimit = memoryLimit;
+		if (isVisible != null) this.isVisible = isVisible;
+	}
 }
