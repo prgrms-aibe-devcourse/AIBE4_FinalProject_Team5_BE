@@ -4,6 +4,7 @@ import kr.java.coditor.domain.problem.dto.ProblemCreateRequest;
 import kr.java.coditor.domain.problem.dto.ProblemResponse;
 import kr.java.coditor.domain.problem.dto.ProblemUpdateRequest;
 import kr.java.coditor.domain.problem.entity.Problem;
+import kr.java.coditor.domain.problem.entity.ProblemExample;
 import kr.java.coditor.domain.problem.exception.ProblemErrorCode;
 import kr.java.coditor.domain.problem.exception.ProblemException;
 import kr.java.coditor.domain.problem.repository.ProblemRepository;
@@ -27,12 +28,25 @@ public class ProblemService {
 	 */
 	@Transactional
 	public ProblemResponse createProblem(Long adminId, ProblemCreateRequest request) {
-		// TODO: 추후 커스텀 예외로 변경 & Security 적용 시 DB 유저 권한(ADMIN) 조회 로직 추가 예정
+		// TODO: Security 적용 시 DB 유저 권한(ADMIN) 조회 로직 추가
 		if (!adminId.equals(1L)) {
 			log.warn("권한 없는 사용자의 문제 등록 시도 - User ID: {}", adminId);
 			throw new ProblemException(ProblemErrorCode.ADMIN_ACCESS_DENIED);
 		}
-		Problem problem = problemRepository.save(request.toEntity());
+		Problem problem = request.toEntity();
+
+		if (request.examples() != null && !request.examples().isEmpty()) {
+			for (var exDto : request.examples()) {
+				ProblemExample example = ProblemExample.builder()
+					.problem(problem)
+					.inputExample(exDto.inputExample())
+					.outputExample(exDto.outputExample())
+					.build();
+				problem.addExample(example);
+			}
+		}
+
+		problem = problemRepository.save(problem);
 		log.info("새로운 문제 등록 완료 - Problem ID: {}, Title: {}", problem.getId(), problem.getTitle());
 		return ProblemResponse.from(problem);
 	}
@@ -86,6 +100,19 @@ public class ProblemService {
 			request.memoryLimit(),
 			request.isVisible()
 		);
+
+		if (request.examples() != null) {
+			List<ProblemExample> newExamples = request.examples().stream()
+				.map(exDto -> ProblemExample.builder()
+					.problem(problem)
+					.inputExample(exDto.inputExample())
+					.outputExample(exDto.outputExample())
+					.build())
+				.collect(Collectors.toList());
+
+			problem.updateExamples(newExamples);
+		}
+
 		log.info("문제 수정 완료 - Problem ID: {}", problem.getId());
 		return ProblemResponse.from(problem);
 	}

@@ -7,6 +7,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "problems")
@@ -43,6 +45,20 @@ public class Problem {
 
 	@Column(name = "created_at", updatable = false)
 	private LocalDateTime createdAt;
+
+	@OneToMany(mappedBy = "problem", cascade = CascadeType.ALL, orphanRemoval = true)
+	private List<ProblemExample> examples = new ArrayList<>();
+
+	public void addExample(ProblemExample example) {
+		this.examples.add(example);
+	}
+
+	public void updateExamples(List<ProblemExample> newExamples) {
+		this.examples.clear();
+		if (newExamples != null) {
+			this.examples.addAll(newExamples);
+		}
+	}
 
 	@Builder
 	public Problem(String title, String content, String inputDesc, String outputDesc,

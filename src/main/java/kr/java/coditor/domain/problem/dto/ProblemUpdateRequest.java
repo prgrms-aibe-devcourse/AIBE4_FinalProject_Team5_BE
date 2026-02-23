@@ -1,5 +1,7 @@
 package kr.java.coditor.domain.problem.dto;
 
+import java.util.List;
+
 public record ProblemUpdateRequest(
 	String title,
 	String content,
@@ -8,6 +10,7 @@ public record ProblemUpdateRequest(
 	Integer level,
 	Double timeLimit,
 	Integer memoryLimit,
-	Boolean isVisible
+	Boolean isVisible,
+	List<ProblemExampleRequest> examples
 ) {
 }
