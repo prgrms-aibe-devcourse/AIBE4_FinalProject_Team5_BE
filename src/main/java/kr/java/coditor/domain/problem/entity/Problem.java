@@ -60,6 +60,20 @@ public class Problem {
 		}
 	}
 
+	@OneToMany(mappedBy = "problem", cascade = CascadeType.ALL, orphanRemoval = true)
+	private List<ProblemTag> problemTags = new ArrayList<>();
+
+	public void addProblemTag(ProblemTag problemTag) {
+		this.problemTags.add(problemTag);
+	}
+
+	public void updateProblemTags(List<ProblemTag> newProblemTags) {
+		this.problemTags.clear();
+		if (newProblemTags != null) {
+			this.problemTags.addAll(newProblemTags);
+		}
+	}
+
 	@Builder
 	public Problem(String title, String content, String inputDesc, String outputDesc,
 				   Integer level, Double timeLimit, Integer memoryLimit, Boolean isVisible) {

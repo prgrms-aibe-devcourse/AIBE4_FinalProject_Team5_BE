@@ -5,9 +5,12 @@ import kr.java.coditor.domain.problem.dto.ProblemResponse;
 import kr.java.coditor.domain.problem.dto.ProblemUpdateRequest;
 import kr.java.coditor.domain.problem.entity.Problem;
 import kr.java.coditor.domain.problem.entity.ProblemExample;
+import kr.java.coditor.domain.problem.entity.ProblemTag;
+import kr.java.coditor.domain.problem.entity.Tag;
 import kr.java.coditor.domain.problem.exception.ProblemErrorCode;
 import kr.java.coditor.domain.problem.exception.ProblemException;
 import kr.java.coditor.domain.problem.repository.ProblemRepository;
+import kr.java.coditor.domain.problem.repository.TagRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -23,6 +26,7 @@ public class ProblemService {
 
 	private final ProblemRepository problemRepository;
 
+	private final TagRepository tagRepository;
 	/**
 	 * [관리자] 문제 등록
 	 */
@@ -43,6 +47,16 @@ public class ProblemService {
 					.outputExample(exDto.outputExample())
 					.build();
 				problem.addExample(example);
+			}
+		}
+
+		if (request.tags() != null && !request.tags().isEmpty()) {
+			for (String tagName : request.tags()) {
+				Tag tag = tagRepository.findByName(tagName)
+					.orElseGet(() -> tagRepository.save(new Tag(tagName)));
+
+				ProblemTag problemTag = new ProblemTag(problem, tag);
+				problem.addProblemTag(problemTag);
 			}
 		}
 
@@ -111,6 +125,18 @@ public class ProblemService {
 				.collect(Collectors.toList());
 
 			problem.updateExamples(newExamples);
+		}
+
+		if (request.tags() != null) {
+			List<ProblemTag> newProblemTags = request.tags().stream()
+				.map(tagName -> {
+					Tag tag = tagRepository.findByName(tagName)
+						.orElseGet(() -> tagRepository.save(new Tag(tagName)));
+					return new ProblemTag(problem, tag);
+				})
+				.collect(Collectors.toList());
+
+			problem.updateProblemTags(newProblemTags);
 		}
 
 		log.info("문제 수정 완료 - Problem ID: {}", problem.getId());

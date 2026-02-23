@@ -13,7 +13,8 @@ public record ProblemCreateRequest(
 	Double timeLimit,
 	Integer memoryLimit,
 	Boolean isVisible,
-	List<ProblemExampleRequest> examples
+	List<ProblemExampleRequest> examples,
+	List<String> tags
 ) {
 	public Problem toEntity() {
 		return Problem.builder()
