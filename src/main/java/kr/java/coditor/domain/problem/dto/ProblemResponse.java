@@ -16,7 +16,8 @@ public record ProblemResponse(
 	Integer memoryLimit,
 	Boolean isVisible,
 	LocalDateTime createdAt,
-	List<ProblemExampleResponse> examples
+	List<ProblemExampleResponse> examples,
+	List<String> tags
 ) {
 	public static ProblemResponse from(Problem problem) {
 		return new ProblemResponse(
@@ -32,6 +33,9 @@ public record ProblemResponse(
 			problem.getCreatedAt(),
 			problem.getExamples().stream()
 				.map(ProblemExampleResponse::from)
+				.collect(Collectors.toList()),
+			problem.getProblemTags().stream()
+				.map(problemTag -> problemTag.getTag().getName())
 				.collect(Collectors.toList())
 		);
 	}

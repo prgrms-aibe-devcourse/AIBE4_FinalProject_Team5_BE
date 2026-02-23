@@ -11,6 +11,7 @@ public record ProblemUpdateRequest(
 	Double timeLimit,
 	Integer memoryLimit,
 	Boolean isVisible,
-	List<ProblemExampleRequest> examples
+	List<ProblemExampleRequest> examples,
+	List<String> tags
 ) {
 }

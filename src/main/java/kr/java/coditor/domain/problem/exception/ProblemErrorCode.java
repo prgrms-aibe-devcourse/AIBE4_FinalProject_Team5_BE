@@ -9,7 +9,8 @@ import org.springframework.http.HttpStatus;
 public enum ProblemErrorCode {
 
 	PROBLEM_NOT_FOUND(HttpStatus.NOT_FOUND, "해당 문제를 찾을 수 없습니다."),
-	ADMIN_ACCESS_DENIED(HttpStatus.FORBIDDEN, "관리자 권한이 필요합니다.");
+	ADMIN_ACCESS_DENIED(HttpStatus.FORBIDDEN, "관리자 권한이 필요합니다."),
+	TAG_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 태그입니다.");
 
 	private final HttpStatus httpStatus;
 	private final String message;
