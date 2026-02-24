@@ -1,5 +1,6 @@
 package kr.java.coditor.global.exception;
 
+import kr.java.coditor.domain.board.exception.BoardException;
 import kr.java.coditor.domain.problem.exception.ProblemException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -15,6 +16,15 @@ public class GlobalExceptionHandler {
 	@ExceptionHandler(ProblemException.class)
 	public ResponseEntity<Map<String, String>> handleProblemException(ProblemException e) {
 		log.warn("Problem Exception Occurred: {}", e.getErrorCode().getMessage());
+
+		return ResponseEntity
+			.status(e.getErrorCode().getHttpStatus())
+			.body(Map.of("message", e.getErrorCode().getMessage()));
+	}
+
+	@ExceptionHandler(BoardException.class)
+	public ResponseEntity<Map<String, String>> handleBoardException(BoardException e) {
+		log.warn("Board Exception Occurred: {}", e.getErrorCode().getMessage());
 
 		return ResponseEntity
 			.status(e.getErrorCode().getHttpStatus())
