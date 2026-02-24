@@ -1,10 +1,7 @@
 package kr.java.coditor.domain.board.controller;
 
 import jakarta.validation.Valid;
-import kr.java.coditor.domain.board.dto.PostCreateRequest;
-import kr.java.coditor.domain.board.dto.PostDetailResponse;
-import kr.java.coditor.domain.board.dto.PostListResponse;
-import kr.java.coditor.domain.board.dto.PostResponse;
+import kr.java.coditor.domain.board.dto.*;
 import kr.java.coditor.domain.board.service.PostService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -46,6 +43,24 @@ public class PostController {
 		log.info("게시글 상세 조회 API 호출 - postId: {}", postId);
 		PostDetailResponse response = postService.getPostDetail(postId);
 		return ResponseEntity.ok(response);
+	}
+
+	@PatchMapping("/{postId}")
+	public ResponseEntity<PostResponse> updatePost(
+		@PathVariable Long postId,
+		@Valid @RequestBody PostUpdateRequest request) {
+		Long dummyUserId = 1L; // 임시
+		log.info("게시글 수정 API 호출 - postId: {}", postId);
+		PostResponse response = postService.updatePost(dummyUserId, postId, request);
+		return ResponseEntity.ok(response);
+	}
+
+	@DeleteMapping("/{postId}")
+	public ResponseEntity<Void> deletePost(@PathVariable Long postId) {
+		Long dummyUserId = 1L; // 임시
+		log.info("게시글 삭제 API 호출 - postId: {}", postId);
+		postService.deletePost(dummyUserId, postId);
+		return ResponseEntity.noContent().build();
 	}
 
 }

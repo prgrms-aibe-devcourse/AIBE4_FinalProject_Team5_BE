@@ -1,9 +1,6 @@
 package kr.java.coditor.domain.board.service;
 
-import kr.java.coditor.domain.board.dto.PostCreateRequest;
-import kr.java.coditor.domain.board.dto.PostDetailResponse;
-import kr.java.coditor.domain.board.dto.PostListResponse;
-import kr.java.coditor.domain.board.dto.PostResponse;
+import kr.java.coditor.domain.board.dto.*;
 import kr.java.coditor.domain.board.entity.Post;
 import kr.java.coditor.domain.board.exception.BoardException;
 import kr.java.coditor.domain.board.exception.BoardErrorCode;
@@ -81,4 +78,39 @@ public class PostService {
 
 		return PostDetailResponse.from(post);
 	}
+
+	@Transactional
+	public PostResponse updatePost(Long userId, Long postId, PostUpdateRequest request) {
+		log.info("게시글 수정 요청 - userId: {}, postId: {}", userId, postId);
+
+		Post post = postRepository.findById(postId)
+			.orElseThrow(() -> new BoardException(BoardErrorCode.POST_NOT_FOUND));
+
+		if (!post.getUser().getId().equals(userId)) {
+			log.warn("게시글 수정 권한 없음 - 요청 userId: {}, 실제 작성자 ID: {}", userId, post.getUser().getId());
+			throw new BoardException(BoardErrorCode.UNAUTHORIZED_ACTION);
+		}
+
+		post.update(request.title(), request.content());
+
+		log.info("게시글 수정 완료 - postId: {}", postId);
+		return PostResponse.from(post);
+	}
+
+	@Transactional
+	public void deletePost(Long userId, Long postId) {
+		log.info("게시글 삭제 요청 - userId: {}, postId: {}", userId, postId);
+
+		Post post = postRepository.findById(postId)
+			.orElseThrow(() -> new BoardException(BoardErrorCode.POST_NOT_FOUND));
+
+		if (!post.getUser().getId().equals(userId)) {
+			log.warn("게시글 삭제 권한 없음 - 요청 userId: {}, 실제 작성자 ID: {}", userId, post.getUser().getId());
+			throw new BoardException(BoardErrorCode.UNAUTHORIZED_ACTION);
+		}
+
+		postRepository.delete(post);
+		log.info("게시글 삭제 완료 - postId: {}", postId);
+	}
+
 }
