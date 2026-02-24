@@ -2,6 +2,7 @@ package kr.java.coditor.domain.board.controller;
 
 import jakarta.validation.Valid;
 import kr.java.coditor.domain.board.dto.CommentCreateRequest;
+import kr.java.coditor.domain.board.dto.CommentReadResponse;
 import kr.java.coditor.domain.board.dto.CommentResponse;
 import kr.java.coditor.domain.board.service.CommentService;
 import lombok.RequiredArgsConstructor;
@@ -9,6 +10,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @Slf4j
 @RestController
@@ -26,4 +29,12 @@ public class CommentController {
 		CommentResponse response = commentService.createComment(dummyUserId, request);
 		return ResponseEntity.status(HttpStatus.CREATED).body(response);
 	}
+
+	@GetMapping("/post/{postId}")
+	public ResponseEntity<List<CommentReadResponse>> getComments(@PathVariable Long postId) {
+		log.info("댓글 목록 조회 API 호출 - postId: {}", postId);
+		List<CommentReadResponse> response = commentService.getComments(postId);
+		return ResponseEntity.ok(response);
+	}
+
 }

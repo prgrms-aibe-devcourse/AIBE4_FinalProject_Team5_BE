@@ -1,6 +1,7 @@
 package kr.java.coditor.domain.board.service;
 
 import kr.java.coditor.domain.board.dto.CommentCreateRequest;
+import kr.java.coditor.domain.board.dto.CommentReadResponse;
 import kr.java.coditor.domain.board.dto.CommentResponse;
 import kr.java.coditor.domain.board.entity.Comment;
 import kr.java.coditor.domain.board.entity.Post;
@@ -14,6 +15,11 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 @Slf4j
 @Service
@@ -57,4 +63,44 @@ public class CommentService {
 
 		return CommentResponse.from(savedComment);
 	}
+
+	@Transactional(readOnly = true)
+	public List<CommentReadResponse> getComments(Long postId) {
+		log.info("게시글 댓글 목록 조회 요청 - postId: {}", postId);
+
+		if (!postRepository.existsById(postId)) {
+			throw new BoardException(BoardErrorCode.POST_NOT_FOUND);
+		}
+
+		List<Comment> comments = commentRepository.findAllByPostIdWithUser(postId);
+
+		Map<Long, CommentReadResponse> map = new HashMap<>();
+		List<CommentReadResponse> roots = new ArrayList<>();
+
+		for (Comment c : comments) {
+			map.put(c.getId(), new CommentReadResponse(
+				c.getId(),
+				c.getContent(),
+				c.getUser().getNickname(),
+				c.getCreatedAt(),
+				new ArrayList<>()
+			));
+		}
+
+		for (Comment c : comments) {
+			CommentReadResponse dto = map.get(c.getId());
+
+			if (c.getParent() != null) {
+				CommentReadResponse parentDto = map.get(c.getParent().getId());
+				if (parentDto != null) {
+					parentDto.children().add(dto);
+				}
+			} else {
+				roots.add(dto);
+			}
+		}
+
+		return roots;
+	}
+
 }
