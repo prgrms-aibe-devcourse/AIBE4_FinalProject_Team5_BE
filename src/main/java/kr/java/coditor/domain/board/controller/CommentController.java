@@ -4,6 +4,7 @@ import jakarta.validation.Valid;
 import kr.java.coditor.domain.board.dto.CommentCreateRequest;
 import kr.java.coditor.domain.board.dto.CommentReadResponse;
 import kr.java.coditor.domain.board.dto.CommentResponse;
+import kr.java.coditor.domain.board.dto.CommentUpdateRequest;
 import kr.java.coditor.domain.board.service.CommentService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -35,6 +36,24 @@ public class CommentController {
 		log.info("댓글 목록 조회 API 호출 - postId: {}", postId);
 		List<CommentReadResponse> response = commentService.getComments(postId);
 		return ResponseEntity.ok(response);
+	}
+
+	@PatchMapping("/{commentId}")
+	public ResponseEntity<CommentResponse> updateComment(
+		@PathVariable Long commentId,
+		@Valid @RequestBody CommentUpdateRequest request) {
+		Long dummyUserId = 1L; // 임시
+		log.info("댓글 수정 API 호출 - commentId: {}", commentId);
+		CommentResponse response = commentService.updateComment(dummyUserId, commentId, request);
+		return ResponseEntity.ok(response);
+	}
+
+	@DeleteMapping("/{commentId}")
+	public ResponseEntity<Void> deleteComment(@PathVariable Long commentId) {
+		Long dummyUserId = 1L; // 임시
+		log.info("댓글 삭제 API 호출 - commentId: {}", commentId);
+		commentService.deleteComment(dummyUserId, commentId);
+		return ResponseEntity.noContent().build();
 	}
 
 }

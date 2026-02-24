@@ -3,6 +3,7 @@ package kr.java.coditor.domain.board.service;
 import kr.java.coditor.domain.board.dto.CommentCreateRequest;
 import kr.java.coditor.domain.board.dto.CommentReadResponse;
 import kr.java.coditor.domain.board.dto.CommentResponse;
+import kr.java.coditor.domain.board.dto.CommentUpdateRequest;
 import kr.java.coditor.domain.board.entity.Comment;
 import kr.java.coditor.domain.board.entity.Post;
 import kr.java.coditor.domain.board.exception.BoardErrorCode;
@@ -101,6 +102,40 @@ public class CommentService {
 		}
 
 		return roots;
+	}
+
+	@Transactional
+	public CommentResponse updateComment(Long userId, Long commentId, CommentUpdateRequest request) {
+		log.info("댓글 수정 요청 - userId: {}, commentId: {}", userId, commentId);
+
+		Comment comment = commentRepository.findById(commentId)
+			.orElseThrow(() -> new BoardException(BoardErrorCode.COMMENT_NOT_FOUND));
+
+		if (!comment.getUser().getId().equals(userId)) {
+			log.warn("댓글 수정 권한 없음 - 요청 userId: {}, 실제 작성자 ID: {}", userId, comment.getUser().getId());
+			throw new BoardException(BoardErrorCode.UNAUTHORIZED_ACTION);
+		}
+
+		comment.updateContent(request.content());
+
+		log.info("댓글 수정 완료 - commentId: {}", commentId);
+		return CommentResponse.from(comment);
+	}
+
+	@Transactional
+	public void deleteComment(Long userId, Long commentId) {
+		log.info("댓글 삭제 요청 - userId: {}, commentId: {}", userId, commentId);
+
+		Comment comment = commentRepository.findById(commentId)
+			.orElseThrow(() -> new BoardException(BoardErrorCode.COMMENT_NOT_FOUND));
+
+		if (!comment.getUser().getId().equals(userId)) {
+			log.warn("댓글 삭제 권한 없음 - 요청 userId: {}, 실제 작성자 ID: {}", userId, comment.getUser().getId());
+			throw new BoardException(BoardErrorCode.UNAUTHORIZED_ACTION);
+		}
+
+		commentRepository.delete(comment);
+		log.info("댓글 삭제 완료 - commentId: {}", commentId);
 	}
 
 }
