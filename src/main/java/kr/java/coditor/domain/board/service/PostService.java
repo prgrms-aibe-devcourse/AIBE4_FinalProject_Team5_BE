@@ -1,6 +1,8 @@
 package kr.java.coditor.domain.board.service;
 
 import kr.java.coditor.domain.board.dto.PostCreateRequest;
+import kr.java.coditor.domain.board.dto.PostDetailResponse;
+import kr.java.coditor.domain.board.dto.PostListResponse;
 import kr.java.coditor.domain.board.dto.PostResponse;
 import kr.java.coditor.domain.board.entity.Post;
 import kr.java.coditor.domain.board.exception.BoardException;
@@ -14,6 +16,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 @Slf4j
 @Service
@@ -55,5 +59,26 @@ public class PostService {
 		log.info("게시글 생성 완료 - postId: {}", savedPost.getId());
 
 		return PostResponse.from(savedPost);
+	}
+
+	@Transactional(readOnly = true)
+	public Page<PostListResponse> getPostList(Pageable pageable) {
+		log.info("게시글 목록 조회 요청 - page: {}, size: {}", pageable.getPageNumber(), pageable.getPageSize());
+
+		return postRepository.findAllWithUserAndProblem(pageable)
+			.map(PostListResponse::from);
+	}
+
+	@Transactional(readOnly = true)
+	public PostDetailResponse getPostDetail(Long postId) {
+		log.info("게시글 상세 조회 요청 - postId: {}", postId);
+
+		Post post = postRepository.findByIdWithUserAndProblem(postId)
+			.orElseThrow(() -> {
+				log.error("게시글 조회 실패 - 존재하지 않는 게시글 ID: {}", postId);
+				return new BoardException(BoardErrorCode.POST_NOT_FOUND);
+			});
+
+		return PostDetailResponse.from(post);
 	}
 }

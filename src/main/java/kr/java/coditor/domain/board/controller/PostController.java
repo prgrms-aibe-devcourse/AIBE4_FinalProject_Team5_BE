@@ -2,10 +2,16 @@ package kr.java.coditor.domain.board.controller;
 
 import jakarta.validation.Valid;
 import kr.java.coditor.domain.board.dto.PostCreateRequest;
+import kr.java.coditor.domain.board.dto.PostDetailResponse;
+import kr.java.coditor.domain.board.dto.PostListResponse;
 import kr.java.coditor.domain.board.dto.PostResponse;
 import kr.java.coditor.domain.board.service.PostService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -26,4 +32,20 @@ public class PostController {
 		PostResponse response = postService.createPost(dummyUserId, request);
 		return ResponseEntity.status(HttpStatus.CREATED).body(response);
 	}
+
+	@GetMapping
+	public ResponseEntity<Page<PostListResponse>> getPostList(
+		@PageableDefault(size = 10, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
+		log.info("게시글 목록 조회 API 호출");
+		Page<PostListResponse> response = postService.getPostList(pageable);
+		return ResponseEntity.ok(response);
+	}
+
+	@GetMapping("/{postId}")
+	public ResponseEntity<PostDetailResponse> getPostDetail(@PathVariable Long postId) {
+		log.info("게시글 상세 조회 API 호출 - postId: {}", postId);
+		PostDetailResponse response = postService.getPostDetail(postId);
+		return ResponseEntity.ok(response);
+	}
+
 }
