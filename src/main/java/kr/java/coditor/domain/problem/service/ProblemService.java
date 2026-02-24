@@ -12,6 +12,9 @@ import kr.java.coditor.domain.problem.exception.ProblemErrorCode;
 import kr.java.coditor.domain.problem.exception.ProblemException;
 import kr.java.coditor.domain.problem.repository.ProblemRepository;
 import kr.java.coditor.domain.problem.repository.TagRepository;
+import kr.java.coditor.domain.user.entity.Role;
+import kr.java.coditor.domain.user.entity.User;
+import kr.java.coditor.domain.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -26,18 +29,25 @@ import java.util.stream.Collectors;
 public class ProblemService {
 
 	private final ProblemRepository problemRepository;
-
 	private final TagRepository tagRepository;
+	private final UserRepository userRepository;
+
+	private void validateAdminRole(Long userId) {
+		User user = userRepository.findById(userId)
+			.orElseThrow(() -> new ProblemException(ProblemErrorCode.USER_NOT_FOUND));
+
+		if (user.getRole() != Role.ADMIN) {
+			log.warn("권한 없는 사용자의 접근 시도 - User ID: {}, 현재 Role: {}", userId, user.getRole());
+			throw new ProblemException(ProblemErrorCode.ADMIN_ACCESS_DENIED);
+		}
+	}
 	/**
 	 * [관리자] 문제 등록
 	 */
 	@Transactional
 	public ProblemResponse createProblem(Long adminId, ProblemCreateRequest request) {
-		// TODO: Security 적용 시 DB 유저 권한(ADMIN) 조회 로직 추가
-		if (!adminId.equals(1L)) {
-			log.warn("권한 없는 사용자의 문제 등록 시도 - User ID: {}", adminId);
-			throw new ProblemException(ProblemErrorCode.ADMIN_ACCESS_DENIED);
-		}
+		validateAdminRole(adminId);
+
 		Problem problem = request.toEntity();
 
 		if (request.examples() != null && !request.examples().isEmpty()) {
@@ -97,14 +107,11 @@ public class ProblemService {
 	 */
 	@Transactional
 	public ProblemResponse updateProblem(Long adminId, Long problemId, ProblemUpdateRequest request) {
-		// 임시 권한 체크
-		if (!adminId.equals(1L)) {
-			log.warn("권한 없는 사용자의 문제 수정 시도 - User ID: {}", adminId);
-			throw new ProblemException(ProblemErrorCode.ADMIN_ACCESS_DENIED);
-		}
+		validateAdminRole(adminId);
+
 		Problem problem = problemRepository.findById(problemId)
 			.orElseThrow(() -> new ProblemException(ProblemErrorCode.PROBLEM_NOT_FOUND));
-		// 부분 업데이트 수행
+
 		problem.update(
 			request.title(),
 			request.content(),
@@ -149,11 +156,8 @@ public class ProblemService {
 	 */
 	@Transactional
 	public void deleteProblem(Long adminId, Long problemId) {
-		// 임시 권한 체크
-		if (!adminId.equals(1L)) {
-			log.warn("권한 없는 사용자의 문제 삭제 시도 - User ID: {}", adminId);
-			throw new ProblemException(ProblemErrorCode.ADMIN_ACCESS_DENIED);
-		}
+		validateAdminRole(adminId);
+
 		Problem problem = problemRepository.findById(problemId)
 			.orElseThrow(() -> new ProblemException(ProblemErrorCode.PROBLEM_NOT_FOUND));
 		problemRepository.delete(problem);
