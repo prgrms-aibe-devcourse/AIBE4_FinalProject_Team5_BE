@@ -1,24 +1,21 @@
 package kr.java.coditor.domain.problem.service;
 
-import kr.java.coditor.domain.problem.dto.ProblemCreateRequest;
-import kr.java.coditor.domain.problem.dto.ProblemResponse;
-import kr.java.coditor.domain.problem.dto.ProblemUpdateRequest;
-import kr.java.coditor.domain.problem.dto.TagResponse;
-import kr.java.coditor.domain.problem.entity.Problem;
-import kr.java.coditor.domain.problem.entity.ProblemExample;
-import kr.java.coditor.domain.problem.entity.ProblemTag;
-import kr.java.coditor.domain.problem.entity.Tag;
+import kr.java.coditor.domain.problem.dto.*;
+import kr.java.coditor.domain.problem.entity.*;
 import kr.java.coditor.domain.problem.exception.ProblemErrorCode;
 import kr.java.coditor.domain.problem.exception.ProblemException;
 import kr.java.coditor.domain.problem.repository.ProblemRepository;
 import kr.java.coditor.domain.problem.repository.TagRepository;
+import kr.java.coditor.domain.problem.repository.TestCaseRepository;
 import kr.java.coditor.domain.user.entity.Role;
 import kr.java.coditor.domain.user.entity.User;
 import kr.java.coditor.domain.user.repository.UserRepository;
+import kr.java.coditor.global.aws.S3Service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -31,6 +28,8 @@ public class ProblemService {
 	private final ProblemRepository problemRepository;
 	private final TagRepository tagRepository;
 	private final UserRepository userRepository;
+	private final TestCaseRepository testCaseRepository;
+	private final S3Service s3Service;
 
 	private void validateAdminRole(Long userId) {
 		User user = userRepository.findById(userId)
@@ -160,8 +159,14 @@ public class ProblemService {
 
 		Problem problem = problemRepository.findById(problemId)
 			.orElseThrow(() -> new ProblemException(ProblemErrorCode.PROBLEM_NOT_FOUND));
+
+		for (TestCase testCase : problem.getTestCases()) {
+			s3Service.deleteFile(testCase.getInputUrl());
+			s3Service.deleteFile(testCase.getOutputUrl());
+		}
+
 		problemRepository.delete(problem);
-		log.info("문제 삭제 완료 - Problem ID: {}", problemId);
+		log.info("문제 및 테스트케이스 파일 삭제 완료 - Problem ID: {}", problemId);
 	}
 
 	@Transactional(readOnly = true)
@@ -172,4 +177,64 @@ public class ProblemService {
 			.map(TagResponse::from)
 			.collect(Collectors.toList());
 	}
+
+	/**
+	 * [관리자] 특정 문제에 테스트케이스 파일 추가
+	 */
+	@Transactional
+	public void addTestCase(Long adminId, Long problemId, MultipartFile inputFile, MultipartFile outputFile) {
+		validateAdminRole(adminId);
+
+		Problem problem = problemRepository.findById(problemId)
+			.orElseThrow(() -> new ProblemException(ProblemErrorCode.PROBLEM_NOT_FOUND));
+
+		String inputUrl = s3Service.uploadFile(inputFile, "testcases/inputs");
+		String outputUrl = s3Service.uploadFile(outputFile, "testcases/outputs");
+		//String inputUrl = "https://dummy-s3-url.com/input.txt";
+		//String outputUrl = "https://dummy-s3-url.com/output.txt";
+
+		TestCase testCase = TestCase.builder()
+			.problem(problem)
+			.inputUrl(inputUrl)
+			.outputUrl(outputUrl)
+			.build();
+
+		problem.addTestCase(testCase);
+		testCase = testCaseRepository.save(testCase);
+		log.info("테스트케이스 추가 완료 - Problem ID: {}, TestCase ID: {}", problemId, testCase.getId());
+	}
+
+	/**
+	 * [관리자] 특정 테스트케이스 단건 삭제
+	 */
+	@Transactional
+	public void deleteTestCase(Long adminId, Long testCaseId) {
+		validateAdminRole(adminId);
+
+		TestCase testCase = testCaseRepository.findById(testCaseId)
+			.orElseThrow(() -> new ProblemException(ProblemErrorCode.TESTCASE_NOT_FOUND));
+
+		s3Service.deleteFile(testCase.getInputUrl());
+		s3Service.deleteFile(testCase.getOutputUrl());
+
+		testCaseRepository.delete(testCase);
+
+		log.info("테스트케이스 삭제 완료 - TestCase ID: {}", testCaseId);
+	}
+
+	@Transactional(readOnly = true)
+	public List<TestCaseResponse> getTestCases(Long adminId, Long problemId) {
+		validateAdminRole(adminId);
+
+		Problem problem = problemRepository.findById(problemId)
+			.orElseThrow(() -> new ProblemException(ProblemErrorCode.PROBLEM_NOT_FOUND));
+
+		List<TestCase> testCases = problem.getTestCases();
+		log.info("테스트케이스 목록 조회 - Problem ID: {}, 총 {}건", problemId, testCases.size());
+
+		return testCases.stream()
+			.map(TestCaseResponse::from)
+			.collect(Collectors.toList());
+	}
+
 }

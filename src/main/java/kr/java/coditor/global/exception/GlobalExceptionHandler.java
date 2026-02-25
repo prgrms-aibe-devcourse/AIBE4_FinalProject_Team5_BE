@@ -31,5 +31,13 @@ public class GlobalExceptionHandler {
 			.body(Map.of("message", e.getErrorCode().getMessage()));
 	}
 
+	@ExceptionHandler(S3Exception.class)
+	public ResponseEntity<Map<String, String>> handleS3Exception(S3Exception e) {
+		log.warn("S3 Exception Occurred: {}", e.getErrorCode().getMessage());
+
+		return ResponseEntity
+			.status(e.getErrorCode().getHttpStatus())
+			.body(Map.of("message", e.getErrorCode().getMessage()));
+	}
 	// 도메인 별 에러 추가
 }
