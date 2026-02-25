@@ -9,6 +9,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 @Slf4j
 @RestController
@@ -46,4 +47,26 @@ public class AdminProblemController {
 		problemService.deleteProblem(mockAdminId, id);
 		return ResponseEntity.noContent().build();
 	}
+
+	// 테스트케이스 파일 업로드
+	@PostMapping("/{id}/testcases")
+	public ResponseEntity<Void> addTestCase(
+		@PathVariable Long id,
+		@RequestPart("inputFile") MultipartFile inputFile,
+		@RequestPart("outputFile") MultipartFile outputFile) {
+		Long mockAdminId = 1L;
+		log.info("API 호출: [관리자] 테스트케이스 파일 업로드 요청 - ID: {}", id);
+		problemService.addTestCase(mockAdminId, id, inputFile, outputFile);
+		return ResponseEntity.status(HttpStatus.CREATED).build();
+	}
+
+	// 테스트케이스 파일 단건 삭제
+	@DeleteMapping("/testcases/{testcaseId}")
+	public ResponseEntity<Void> deleteTestCase(@PathVariable Long testcaseId) {
+		Long mockAdminId = 1L;
+		log.info("API 호출: [관리자] 테스트케이스 파일 삭제 요청 - ID: {}", testcaseId);
+		problemService.deleteTestCase(mockAdminId, testcaseId);
+		return ResponseEntity.noContent().build();
+	}
+
 }

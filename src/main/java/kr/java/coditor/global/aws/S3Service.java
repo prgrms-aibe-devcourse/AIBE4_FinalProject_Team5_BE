@@ -48,7 +48,7 @@ public class S3Service {
 
 			return uploadUrl;
 
-		} catch (IOException e) {
+		} catch (Exception e) {
 			log.error("S3 파일 업로드 중 에러 발생: {}", e.getMessage());
 			throw new S3Exception(S3ErrorCode.FILE_UPLOAD_ERROR);
 		}

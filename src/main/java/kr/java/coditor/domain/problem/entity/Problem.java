@@ -74,6 +74,13 @@ public class Problem {
 		}
 	}
 
+	@OneToMany(mappedBy = "problem", cascade = CascadeType.ALL, orphanRemoval = true)
+	private List<TestCase> testCases = new ArrayList<>();
+
+	public void addTestCase(TestCase testCase) {
+		this.testCases.add(testCase);
+	}
+
 	@Builder
 	public Problem(String title, String content, String inputDesc, String outputDesc,
 				   Integer level, Double timeLimit, Integer memoryLimit, Boolean isVisible) {
