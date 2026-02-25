@@ -1,9 +1,6 @@
 package kr.java.coditor.domain.problem.service;
 
-import kr.java.coditor.domain.problem.dto.ProblemCreateRequest;
-import kr.java.coditor.domain.problem.dto.ProblemResponse;
-import kr.java.coditor.domain.problem.dto.ProblemUpdateRequest;
-import kr.java.coditor.domain.problem.dto.TagResponse;
+import kr.java.coditor.domain.problem.dto.*;
 import kr.java.coditor.domain.problem.entity.*;
 import kr.java.coditor.domain.problem.exception.ProblemErrorCode;
 import kr.java.coditor.domain.problem.exception.ProblemException;
@@ -223,6 +220,21 @@ public class ProblemService {
 		testCaseRepository.delete(testCase);
 
 		log.info("테스트케이스 삭제 완료 - TestCase ID: {}", testCaseId);
+	}
+
+	@Transactional(readOnly = true)
+	public List<TestCaseResponse> getTestCases(Long adminId, Long problemId) {
+		validateAdminRole(adminId);
+
+		Problem problem = problemRepository.findById(problemId)
+			.orElseThrow(() -> new ProblemException(ProblemErrorCode.PROBLEM_NOT_FOUND));
+
+		List<TestCase> testCases = problem.getTestCases();
+		log.info("테스트케이스 목록 조회 - Problem ID: {}, 총 {}건", problemId, testCases.size());
+
+		return testCases.stream()
+			.map(TestCaseResponse::from)
+			.collect(Collectors.toList());
 	}
 
 }

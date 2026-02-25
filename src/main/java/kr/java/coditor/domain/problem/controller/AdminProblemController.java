@@ -3,6 +3,7 @@ package kr.java.coditor.domain.problem.controller;
 import kr.java.coditor.domain.problem.dto.ProblemCreateRequest;
 import kr.java.coditor.domain.problem.dto.ProblemResponse;
 import kr.java.coditor.domain.problem.dto.ProblemUpdateRequest;
+import kr.java.coditor.domain.problem.dto.TestCaseResponse;
 import kr.java.coditor.domain.problem.service.ProblemService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -10,6 +11,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+
+import java.util.List;
 
 @Slf4j
 @RestController
@@ -67,6 +70,15 @@ public class AdminProblemController {
 		log.info("API 호출: [관리자] 테스트케이스 파일 삭제 요청 - ID: {}", testcaseId);
 		problemService.deleteTestCase(mockAdminId, testcaseId);
 		return ResponseEntity.noContent().build();
+	}
+
+	// 테스트케이스 목록 조회
+	@GetMapping("/{id}/testcases")
+	public ResponseEntity<List<TestCaseResponse>> getTestCases(@PathVariable Long id) {
+		Long mockAdminId = 1L;
+		log.info("API 호출: [관리자] 테스트케이스 목록 조회 요청 - ID: {}", id);
+		List<TestCaseResponse> response = problemService.getTestCases(mockAdminId, id);
+		return ResponseEntity.ok(response);
 	}
 
 }
