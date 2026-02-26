@@ -15,7 +15,7 @@ services:
             - --character-set-server=utf8mb4
             - --collation-server=utf8mb4_unicode_ci
         volumes:
-            - ./infra/data/mysql:/var/lib/mysql # 데이터 영구 저장
+            - ./infra/data/mysql:/var/lib/mysql
         restart: always
 
     # 2. Cache & Session (Redis)
@@ -28,7 +28,7 @@ services:
             - ./infra/data/redis:/data
         restart: always
 
-    # 3. Message Queue (RabbitMQ) - 채점 요청 처리
+    # 3. Message Queue - 채점 요청 처리
     rabbitmq:
         image: rabbitmq:3-management
         container_name: coditor-mq
@@ -40,13 +40,4 @@ services:
             RABBITMQ_DEFAULT_PASS: ${RABBITMQ_DEFAULT_PASS}
         volumes:
             - ./infra/data/rabbitmq:/var/lib/rabbitmq
-        restart: always
-
-    # 4. Tunnel (Localhost -> Public URL)
-    tunnel:
-        image: cloudflare/cloudflared:latest
-        container_name: coditor-tunnel
-        command: tunnel run
-        environment:
-            - TUNNEL_TOKEN=${TUNNEL_TOKEN}
         restart: always
