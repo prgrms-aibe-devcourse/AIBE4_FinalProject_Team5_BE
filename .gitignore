@@ -40,6 +40,7 @@ out/
 .env
 .env.local
 .pem
+**/application.yml
 
 ### Docker,SQL 파일경로입니다. 커밋금지 ###
 infra/data/
