@@ -82,6 +82,7 @@ public class CommentService {
 			map.put(c.getId(), new CommentReadResponse(
 				c.getId(),
 				c.getContent(),
+				c.getUser().getId(),
 				c.getUser().getNickname(),
 				c.getCreatedAt(),
 				new ArrayList<>()
