@@ -42,6 +42,9 @@ public class User {
 	@Column(name = "created_at", updatable = false)
 	private LocalDateTime createdAt;
 
+	@OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+	private UserProfile userProfile;
+
 	@Builder
 	public User(String email, String password, String nickname, Role role, Provider provider) {
 		this.email = email;
@@ -49,5 +52,17 @@ public class User {
 		this.nickname = nickname;
 		this.role = role != null ? role : Role.USER;
 		this.provider = provider != null ? provider : Provider.LOCAL;
+	}
+
+	public void updateNickname(String nickname) {
+		this.nickname = nickname;
+	}
+
+	public void updatePassword(String password) {
+		this.password = password;
+	}
+
+	public void setUserProfile(UserProfile userProfile) {
+		this.userProfile = userProfile;
 	}
 }
