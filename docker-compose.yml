@@ -1,8 +1,14 @@
+version: '3.8'
+
 services:
-    # 1. Database (MySQL 8.0)
+    # ==========================================
+    # AWS 메인 서버용 인프라
+    # ==========================================
+
     mysql:
         image: mysql:8.0
         container_name: coditor-db
+        profiles: ["aws"]
         ports:
             - "3306:3306"
         environment:
@@ -18,20 +24,20 @@ services:
             - ./infra/data/mysql:/var/lib/mysql
         restart: always
 
-    # 2. Cache & Session (Redis)
     redis:
         image: redis:alpine
         container_name: coditor-redis
+        profiles: ["aws"]
         ports:
             - "6379:6379"
         volumes:
             - ./infra/data/redis:/data
         restart: always
 
-    # 3. Message Queue - 채점 요청 처리
     rabbitmq:
         image: rabbitmq:3-management
         container_name: coditor-mq
+        profiles: ["aws"]
         ports:
             - "5672:5672"   # 앱 연결 포트
             - "15672:15672" # 관리자 웹 UI 포트
@@ -40,4 +46,41 @@ services:
             RABBITMQ_DEFAULT_PASS: ${RABBITMQ_DEFAULT_PASS}
         volumes:
             - ./infra/data/rabbitmq:/var/lib/rabbitmq
+        restart: always
+
+    coditor-api:
+        image: ${DOCKER_USERNAME}/coditor-api:latest
+        container_name: coditor-api
+        profiles: ["aws"]
+        ports:
+            - "8080:8080"
+        environment:
+            SPRING_PROFILES_ACTIVE: prod
+            SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/${MYSQL_DATABASE}?serverTimezone=Asia/Seoul
+            SPRING_RABBITMQ_HOST: rabbitmq
+            SPRING_DATA_REDIS_HOST: redis
+        depends_on:
+            - mysql
+            - redis
+            - rabbitmq
+        restart: always
+
+
+    # ==========================================
+    # 로컬 채점 워커용
+    # ==========================================
+
+    coditor-worker:
+        image: ${DOCKER_USERNAME}/coditor-worker:latest
+        container_name: coditor-worker
+        profiles: ["worker"]
+        environment:
+            SPRING_PROFILES_ACTIVE: worker
+            SPRING_DATASOURCE_URL: jdbc:mysql://${AWS_PUBLIC_IP}:3306/${MYSQL_DATABASE}?serverTimezone=Asia/Seoul
+            SPRING_RABBITMQ_HOST: ${AWS_PUBLIC_IP}
+            SPRING_DATA_REDIS_HOST: ${AWS_PUBLIC_IP}
+        volumes:
+            # 컨테이너 내부에서 로컬(호스트)의 도커 데몬을 사용해 채점 컨테이너를 띄우기 위함 (DinD)
+            - /var/run/docker.sock:/var/run/docker.sock
+            - ./temp_submissions:/app/temp_submissions # 임시 파일 마운트
         restart: always
