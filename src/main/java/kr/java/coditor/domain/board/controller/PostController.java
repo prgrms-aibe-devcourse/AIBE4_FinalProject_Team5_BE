@@ -32,9 +32,10 @@ public class PostController {
 
 	@GetMapping
 	public ResponseEntity<Page<PostListResponse>> getPostList(
+		@RequestParam(required = false) String keyword,
 		@PageableDefault(size = 10, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
-		log.info("게시글 목록 조회 API 호출");
-		Page<PostListResponse> response = postService.getPostList(pageable);
+		log.info("게시글 목록 조회 API 호출 - keyword: {}", keyword);
+		Page<PostListResponse> response = postService.getPostList(keyword, pageable);
 		return ResponseEntity.ok(response);
 	}
 
