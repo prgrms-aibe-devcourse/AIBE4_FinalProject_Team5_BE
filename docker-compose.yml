@@ -1,8 +1,10 @@
+version: '3.8'
+
 services:
-    # 1. Database (MySQL 8.0)
     mysql:
         image: mysql:8.0
         container_name: coditor-db
+        profiles: ["aws", "local"]
         ports:
             - "3306:3306"
         environment:
@@ -18,26 +20,62 @@ services:
             - ./infra/data/mysql:/var/lib/mysql
         restart: always
 
-    # 2. Cache & Session (Redis)
     redis:
         image: redis:alpine
         container_name: coditor-redis
+        profiles: ["aws", "local"]
         ports:
             - "6379:6379"
         volumes:
             - ./infra/data/redis:/data
         restart: always
 
-    # 3. Message Queue - 채점 요청 처리
     rabbitmq:
         image: rabbitmq:3-management
         container_name: coditor-mq
+        profiles: ["aws", "local"]
         ports:
-            - "5672:5672"   # 앱 연결 포트
-            - "15672:15672" # 관리자 웹 UI 포트
+            - "5672:5672"
+            - "15672:15672"
         environment:
             RABBITMQ_DEFAULT_USER: ${RABBITMQ_DEFAULT_USER}
             RABBITMQ_DEFAULT_PASS: ${RABBITMQ_DEFAULT_PASS}
         volumes:
             - ./infra/data/rabbitmq:/var/lib/rabbitmq
+        restart: always
+
+    coditor-api:
+        image: ${DOCKER_USERNAME}/coditor-api:latest
+        container_name: coditor-api
+        profiles: ["aws", "local"]
+        ports:
+            - "8080:8080"
+        environment:
+            SPRING_PROFILES_ACTIVE: prod
+            SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/${MYSQL_DATABASE}?serverTimezone=Asia/Seoul
+            SPRING_RABBITMQ_HOST: rabbitmq
+            SPRING_DATA_REDIS_HOST: redis
+        depends_on:
+            - mysql
+            - redis
+            - rabbitmq
+        restart: always
+
+    # 채점 서버
+    coditor-worker:
+        image: ${DOCKER_USERNAME}/coditor-worker:latest
+        container_name: coditor-worker
+        profiles: ["worker", "local"]
+        environment:
+            SPRING_PROFILES_ACTIVE: worker
+            SPRING_DATASOURCE_URL: jdbc:mysql://${AWS_PUBLIC_IP:-mysql}:3306/${MYSQL_DATABASE}?serverTimezone=Asia/Seoul
+            SPRING_RABBITMQ_HOST: ${AWS_PUBLIC_IP:-rabbitmq}
+            SPRING_DATA_REDIS_HOST: ${AWS_PUBLIC_IP:-redis}
+        volumes:
+            - /var/run/docker.sock:/var/run/docker.sock
+            - ./temp_submissions:/app/temp_submissions
+        depends_on:
+            - mysql
+            - redis
+            - rabbitmq
         restart: always

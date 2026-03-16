@@ -1,33 +1,38 @@
 package kr.java.coditor.domain.notification.service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import kr.java.coditor.domain.notification.dto.NotificationMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.redis.connection.Message;
+import org.springframework.data.redis.connection.MessageListener;
 import org.springframework.stereotype.Service;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-
-import kr.java.coditor.domain.notification.dto.NotificationMessage;
+import java.nio.charset.StandardCharsets;
 
 @Service
-public class RedisSubscriber {
+public class RedisSubscriber implements MessageListener {
 
 	private static final Logger log = LoggerFactory.getLogger(RedisSubscriber.class);
 
-	// 직접 인스턴스화하여 사용
-	private final ObjectMapper objectMapper = new ObjectMapper();
+	private final ObjectMapper objectMapper;
 	private final NotificationService notificationService;
 
-	// 생성자에서 ObjectMapper를 제거하고 NotificationService만 주입받음
-	public RedisSubscriber(NotificationService notificationService) {
+	public RedisSubscriber(ObjectMapper objectMapper, NotificationService notificationService) {
+		this.objectMapper = objectMapper;
 		this.notificationService = notificationService;
 	}
 
-	public void sendMessage(String publishMessage) {
+	@Override
+	public void onMessage(Message message, byte[] pattern) {
 		try {
-			NotificationMessage message = objectMapper.readValue(publishMessage, NotificationMessage.class);
-			notificationService.sendToClient(message.getMemberId(), message.getMessage());
+			String publishMessage = new String(message.getBody(), StandardCharsets.UTF_8);
+			NotificationMessage notificationMessage =
+				objectMapper.readValue(publishMessage, NotificationMessage.class);
+
+			notificationService.sendToClient(notificationMessage);
 		} catch (Exception e) {
-			log.error("Redis 메시지 역직렬화 및 전송 실패", e);
+			log.error("Redis 메시지 역직렬화 및 SSE 전송 실패", e);
 		}
 	}
 }
