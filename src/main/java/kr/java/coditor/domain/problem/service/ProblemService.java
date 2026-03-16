@@ -13,6 +13,8 @@ import kr.java.coditor.domain.user.repository.UserRepository;
 import kr.java.coditor.global.aws.S3Service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -93,12 +95,12 @@ public class ProblemService {
 	 * [공통] 문제 전체 목록 조회
 	 */
 	@Transactional(readOnly = true)
-	public List<ProblemResponse> getAllProblems() {
-		List<Problem> problems = problemRepository.findAll();
-		log.info("전체 문제 목록 조회 - 총 {}건", problems.size());
-		return problems.stream()
-			.map(ProblemResponse::from)
-			.collect(Collectors.toList());
+	public Page<ProblemResponse> getAllProblems(String keyword, Integer level, String tag, Pageable pageable) {
+		Page<Problem> problemPage = problemRepository.searchProblems(keyword, level, tag, pageable);
+
+		log.info("문제 목록 페이징 검색 결과 - 총 {}페이지 중 {}번째 페이지", problemPage.getTotalPages(), problemPage.getNumber());
+
+		return problemPage.map(ProblemResponse::from);
 	}
 
 	/**

@@ -4,6 +4,10 @@ import kr.java.coditor.domain.problem.dto.ProblemResponse;
 import kr.java.coditor.domain.problem.service.ProblemService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -19,9 +23,13 @@ public class ProblemController {
 
 	// 전체 문제 목록 조회
 	@GetMapping
-	public ResponseEntity<List<ProblemResponse>> getAllProblems() {
-		log.info("API 호출: 전체 문제 목록 조회");
-		return ResponseEntity.ok(problemService.getAllProblems());
+	public ResponseEntity<Page<ProblemResponse>> getAllProblems(
+		@RequestParam(required = false) String keyword,
+		@RequestParam(required = false) Integer level,
+		@RequestParam(required = false) String tag,
+		@PageableDefault(size = 10, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable
+	) {
+		return ResponseEntity.ok(problemService.getAllProblems(keyword, level, tag, pageable));
 	}
 
 	// 문제 상세 조회
