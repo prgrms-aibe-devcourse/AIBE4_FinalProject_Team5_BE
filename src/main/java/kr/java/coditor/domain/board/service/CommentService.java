@@ -32,10 +32,10 @@ public class CommentService {
 	private final UserRepository userRepository;
 
 	@Transactional
-	public CommentResponse createComment(Long userId, CommentCreateRequest request) {
-		log.info("댓글 등록 요청 - userId: {}, postId: {}", userId, request.postId());
+	public CommentResponse createComment(String email, CommentCreateRequest request) {
+		log.info("댓글 등록 요청 - email: {}, postId: {}", email, request.postId());
 
-		User user = userRepository.findById(userId)
+		User user = userRepository.findByEmail(email)
 			.orElseThrow(() -> new BoardException(BoardErrorCode.USER_NOT_FOUND));
 
 		Post post = postRepository.findById(request.postId())
@@ -106,14 +106,14 @@ public class CommentService {
 	}
 
 	@Transactional
-	public CommentResponse updateComment(Long userId, Long commentId, CommentUpdateRequest request) {
-		log.info("댓글 수정 요청 - userId: {}, commentId: {}", userId, commentId);
+	public CommentResponse updateComment(String email, Long commentId, CommentUpdateRequest request) {
+		log.info("댓글 수정 요청 - email: {}, commentId: {}", email, commentId);
 
 		Comment comment = commentRepository.findById(commentId)
 			.orElseThrow(() -> new BoardException(BoardErrorCode.COMMENT_NOT_FOUND));
 
-		if (!comment.getUser().getId().equals(userId)) {
-			log.warn("댓글 수정 권한 없음 - 요청 userId: {}, 실제 작성자 ID: {}", userId, comment.getUser().getId());
+		if (!comment.getUser().getEmail().equals(email)) {
+			log.warn("댓글 수정 권한 없음 - 요청 email: {}, 실제 작성자 email: {}", email, comment.getUser().getEmail());
 			throw new BoardException(BoardErrorCode.UNAUTHORIZED_ACTION);
 		}
 
@@ -124,14 +124,14 @@ public class CommentService {
 	}
 
 	@Transactional
-	public void deleteComment(Long userId, Long commentId) {
-		log.info("댓글 삭제 요청 - userId: {}, commentId: {}", userId, commentId);
+	public void deleteComment(String email, Long commentId) {
+		log.info("댓글 삭제 요청 - email: {}, commentId: {}", email, commentId);
 
 		Comment comment = commentRepository.findById(commentId)
 			.orElseThrow(() -> new BoardException(BoardErrorCode.COMMENT_NOT_FOUND));
 
-		if (!comment.getUser().getId().equals(userId)) {
-			log.warn("댓글 삭제 권한 없음 - 요청 userId: {}, 실제 작성자 ID: {}", userId, comment.getUser().getId());
+		if (!comment.getUser().getEmail().equals(email)) {
+			log.warn("댓글 삭제 권한 없음 - 요청 email: {}, 실제 작성자 email: {}", email, comment.getUser().getEmail());
 			throw new BoardException(BoardErrorCode.UNAUTHORIZED_ACTION);
 		}
 

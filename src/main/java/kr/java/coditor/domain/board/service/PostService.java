@@ -26,12 +26,12 @@ public class PostService {
 	private final UserRepository userRepository;
 
 	@Transactional
-	public PostResponse createPost(Long userId, PostCreateRequest request) {
-		log.info("게시글 생성 요청 처리 시작 - userId: {}, title: {}", userId, request.title());
+	public PostResponse createPost(String email, PostCreateRequest request) {
+		log.info("게시글 생성 요청 처리 시작 - email: {}, title: {}", email, request.title());
 
-		User user = userRepository.findById(userId)
+		User user = userRepository.findByEmail(email)
 			.orElseThrow(() -> {
-				log.error("게시글 생성 실패 - 존재하지 않는 유저 ID: {}", userId);
+				log.error("게시글 생성 실패 - 존재하지 않는 유저 email: {}", email);
 				return new BoardException(BoardErrorCode.USER_NOT_FOUND);
 			});
 
@@ -80,14 +80,14 @@ public class PostService {
 	}
 
 	@Transactional
-	public PostResponse updatePost(Long userId, Long postId, PostUpdateRequest request) {
-		log.info("게시글 수정 요청 - userId: {}, postId: {}", userId, postId);
+	public PostResponse updatePost(String email, Long postId, PostUpdateRequest request) {
+		log.info("게시글 수정 요청 - email: {}, postId: {}", email, postId);
 
 		Post post = postRepository.findById(postId)
 			.orElseThrow(() -> new BoardException(BoardErrorCode.POST_NOT_FOUND));
 
-		if (!post.getUser().getId().equals(userId)) {
-			log.warn("게시글 수정 권한 없음 - 요청 userId: {}, 실제 작성자 ID: {}", userId, post.getUser().getId());
+		if (!post.getUser().getEmail().equals(email)) {
+			log.warn("게시글 수정 권한 없음 - 요청 email: {}, 실제 작성자 email: {}", email, post.getUser().getEmail());
 			throw new BoardException(BoardErrorCode.UNAUTHORIZED_ACTION);
 		}
 
@@ -98,14 +98,14 @@ public class PostService {
 	}
 
 	@Transactional
-	public void deletePost(Long userId, Long postId) {
-		log.info("게시글 삭제 요청 - userId: {}, postId: {}", userId, postId);
+	public void deletePost(String email, Long postId) {
+		log.info("게시글 삭제 요청 - email: {}, postId: {}", email, postId);
 
 		Post post = postRepository.findById(postId)
 			.orElseThrow(() -> new BoardException(BoardErrorCode.POST_NOT_FOUND));
 
-		if (!post.getUser().getId().equals(userId)) {
-			log.warn("게시글 삭제 권한 없음 - 요청 userId: {}, 실제 작성자 ID: {}", userId, post.getUser().getId());
+		if (!post.getUser().getEmail().equals(email)) {
+			log.warn("게시글 삭제 권한 없음 - 요청 email: {}, 실제 작성자 email: {}", email, post.getUser().getEmail());
 			throw new BoardException(BoardErrorCode.UNAUTHORIZED_ACTION);
 		}
 

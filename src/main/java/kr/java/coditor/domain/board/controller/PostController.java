@@ -11,6 +11,8 @@ import org.springframework.data.web.PageableDefault;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 @Slf4j
@@ -22,11 +24,12 @@ public class PostController {
 	private final PostService postService;
 
 	@PostMapping
-	public ResponseEntity<PostResponse> createPost(@Valid @RequestBody PostCreateRequest request) {
-		// TODO: 추후 JWT 로그인 기능 연동 시 수정
-		Long dummyUserId = 1L;
-		log.info("게시글 등록 API 호출 - 임시 userId: {}", dummyUserId);
-		PostResponse response = postService.createPost(dummyUserId, request);
+	public ResponseEntity<PostResponse> createPost(
+		@AuthenticationPrincipal UserDetails userDetails,
+		@Valid @RequestBody PostCreateRequest request) {
+		String email = userDetails.getUsername();
+		log.info("게시글 등록 API 호출 - email: {}", email);
+		PostResponse response = postService.createPost(email, request);
 		return ResponseEntity.status(HttpStatus.CREATED).body(response);
 	}
 
@@ -49,18 +52,21 @@ public class PostController {
 	@PatchMapping("/{postId}")
 	public ResponseEntity<PostResponse> updatePost(
 		@PathVariable Long postId,
+		@AuthenticationPrincipal UserDetails userDetails,
 		@Valid @RequestBody PostUpdateRequest request) {
-		Long dummyUserId = 1L; // 임시
-		log.info("게시글 수정 API 호출 - postId: {}", postId);
-		PostResponse response = postService.updatePost(dummyUserId, postId, request);
+		String email = userDetails.getUsername();
+		log.info("게시글 수정 API 호출 - email: {}, postId: {}", email, postId);
+		PostResponse response = postService.updatePost(email, postId, request);
 		return ResponseEntity.ok(response);
 	}
 
 	@DeleteMapping("/{postId}")
-	public ResponseEntity<Void> deletePost(@PathVariable Long postId) {
-		Long dummyUserId = 1L; // 임시
-		log.info("게시글 삭제 API 호출 - postId: {}", postId);
-		postService.deletePost(dummyUserId, postId);
+	public ResponseEntity<Void> deletePost(
+		@PathVariable Long postId,
+		@AuthenticationPrincipal UserDetails userDetails) {
+		String email = userDetails.getUsername();
+		log.info("게시글 삭제 API 호출 - email: {}, postId: {}", email, postId);
+		postService.deletePost(email, postId);
 		return ResponseEntity.noContent().build();
 	}
 
