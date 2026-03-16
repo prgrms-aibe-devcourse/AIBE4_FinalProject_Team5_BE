@@ -59,10 +59,10 @@ public class PostService {
 	}
 
 	@Transactional(readOnly = true)
-	public Page<PostListResponse> getPostList(Pageable pageable) {
-		log.info("게시글 목록 조회 요청 - page: {}, size: {}", pageable.getPageNumber(), pageable.getPageSize());
+	public Page<PostListResponse> getPostList(String keyword, Pageable pageable) {
+		log.info("게시글 목록 조회 요청 - keyword: {}, page: {}, size: {}", keyword, pageable.getPageNumber(), pageable.getPageSize());
 
-		return postRepository.findAllWithUserAndProblem(pageable)
+		return postRepository.searchPostsWithUserAndProblem(keyword, pageable)
 			.map(PostListResponse::from);
 	}
 

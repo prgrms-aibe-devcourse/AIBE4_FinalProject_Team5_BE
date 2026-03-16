@@ -16,6 +16,12 @@ public interface PostRepository extends JpaRepository<Post, Long> {
 		countQuery = "SELECT COUNT(p) FROM Post p")
 	Page<Post> findAllWithUserAndProblem(Pageable pageable);
 
+	@Query(value = "SELECT p FROM Post p JOIN FETCH p.user LEFT JOIN FETCH p.problem " +
+		"WHERE (:keyword IS NULL OR :keyword = '' OR p.title LIKE %:keyword% OR p.content LIKE %:keyword%)",
+		countQuery = "SELECT COUNT(p) FROM Post p " +
+			"WHERE (:keyword IS NULL OR :keyword = '' OR p.title LIKE %:keyword% OR p.content LIKE %:keyword%)")
+	Page<Post> searchPostsWithUserAndProblem(@Param("keyword") String keyword, Pageable pageable);
+
 	// 2. 단건 상세 조회
 	@Query("SELECT p FROM Post p JOIN FETCH p.user LEFT JOIN FETCH p.problem WHERE p.id = :id")
 	Optional<Post> findByIdWithUserAndProblem(@Param("id") Long id);
