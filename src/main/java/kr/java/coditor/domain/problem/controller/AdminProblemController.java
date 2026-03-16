@@ -9,6 +9,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -24,10 +26,12 @@ public class AdminProblemController {
 
 	// 문제 등록
 	@PostMapping
-	public ResponseEntity<ProblemResponse> createProblem(@RequestBody ProblemCreateRequest request) {
-		Long mockAdminId = 1L;
-		log.info("API 호출: [관리자] 문제 등록 요청 - Title: {}, UserID: {}", request.title(), mockAdminId);
-		ProblemResponse response = problemService.createProblem(mockAdminId, request);
+	public ResponseEntity<ProblemResponse> createProblem(
+		@AuthenticationPrincipal UserDetails userDetails,
+		@RequestBody ProblemCreateRequest request) {
+		String adminEmail = userDetails.getUsername();
+		log.info("API 호출: [관리자] 문제 등록 요청 - Title: {}, AdminEmail: {}", request.title(), adminEmail);
+		ProblemResponse response = problemService.createProblem(adminEmail, request);
 		return ResponseEntity.status(HttpStatus.CREATED).body(response);
 	}
 
@@ -35,19 +39,22 @@ public class AdminProblemController {
 	@PatchMapping("/{id}")
 	public ResponseEntity<ProblemResponse> updateProblem(
 		@PathVariable Long id,
+		@AuthenticationPrincipal UserDetails userDetails,
 		@RequestBody ProblemUpdateRequest request) {
-		Long mockAdminId = 1L;
-		log.info("API 호출: [관리자] 문제 부분 수정 요청 - ID: {}", id);
-		ProblemResponse response = problemService.updateProblem(mockAdminId, id, request);
+		String adminEmail = userDetails.getUsername();
+		log.info("API 호출: [관리자] 문제 부분 수정 요청 - ID: {}, AdminEmail: {}", id, adminEmail);
+		ProblemResponse response = problemService.updateProblem(adminEmail, id, request);
 		return ResponseEntity.ok(response);
 	}
 
 	// 문제 삭제
 	@DeleteMapping("/{id}")
-	public ResponseEntity<Void> deleteProblem(@PathVariable Long id) {
-		Long mockAdminId = 1L;
-		log.info("API 호출: [관리자] 문제 삭제 요청 - ID: {}", id);
-		problemService.deleteProblem(mockAdminId, id);
+	public ResponseEntity<Void> deleteProblem(
+		@PathVariable Long id,
+		@AuthenticationPrincipal UserDetails userDetails) {
+		String adminEmail = userDetails.getUsername();
+		log.info("API 호출: [관리자] 문제 삭제 요청 - ID: {}, AdminEmail: {}", id, adminEmail);
+		problemService.deleteProblem(adminEmail, id);
 		return ResponseEntity.noContent().build();
 	}
 
@@ -55,29 +62,34 @@ public class AdminProblemController {
 	@PostMapping("/{id}/testcases")
 	public ResponseEntity<Void> addTestCase(
 		@PathVariable Long id,
+		@AuthenticationPrincipal UserDetails userDetails,
 		@RequestPart("inputFile") MultipartFile inputFile,
 		@RequestPart("outputFile") MultipartFile outputFile) {
-		Long mockAdminId = 1L;
-		log.info("API 호출: [관리자] 테스트케이스 파일 업로드 요청 - ID: {}", id);
-		problemService.addTestCase(mockAdminId, id, inputFile, outputFile);
+		String adminEmail = userDetails.getUsername();
+		log.info("API 호출: [관리자] 테스트케이스 파일 업로드 요청 - ID: {}, AdminEmail: {}", id, adminEmail);
+		problemService.addTestCase(adminEmail, id, inputFile, outputFile);
 		return ResponseEntity.status(HttpStatus.CREATED).build();
 	}
 
 	// 테스트케이스 파일 단건 삭제
 	@DeleteMapping("/testcases/{testcaseId}")
-	public ResponseEntity<Void> deleteTestCase(@PathVariable Long testcaseId) {
-		Long mockAdminId = 1L;
-		log.info("API 호출: [관리자] 테스트케이스 파일 삭제 요청 - ID: {}", testcaseId);
-		problemService.deleteTestCase(mockAdminId, testcaseId);
+	public ResponseEntity<Void> deleteTestCase(
+		@PathVariable Long testcaseId,
+		@AuthenticationPrincipal UserDetails userDetails) {
+		String adminEmail = userDetails.getUsername();
+		log.info("API 호출: [관리자] 테스트케이스 파일 삭제 요청 - ID: {}, AdminEmail: {}", testcaseId, adminEmail);
+		problemService.deleteTestCase(adminEmail, testcaseId);
 		return ResponseEntity.noContent().build();
 	}
 
 	// 테스트케이스 목록 조회
 	@GetMapping("/{id}/testcases")
-	public ResponseEntity<List<TestCaseResponse>> getTestCases(@PathVariable Long id) {
-		Long mockAdminId = 1L;
-		log.info("API 호출: [관리자] 테스트케이스 목록 조회 요청 - ID: {}", id);
-		List<TestCaseResponse> response = problemService.getTestCases(mockAdminId, id);
+	public ResponseEntity<List<TestCaseResponse>> getTestCases(
+		@PathVariable Long id,
+		@AuthenticationPrincipal UserDetails userDetails) {
+		String adminEmail = userDetails.getUsername();
+		log.info("API 호출: [관리자] 테스트케이스 목록 조회 요청 - ID: {}, AdminEmail: {}", id, adminEmail);
+		List<TestCaseResponse> response = problemService.getTestCases(adminEmail, id);
 		return ResponseEntity.ok(response);
 	}
 

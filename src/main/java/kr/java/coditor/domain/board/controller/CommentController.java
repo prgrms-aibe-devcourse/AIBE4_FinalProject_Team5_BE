@@ -10,6 +10,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -23,11 +25,12 @@ public class CommentController {
 	private final CommentService commentService;
 
 	@PostMapping
-	public ResponseEntity<CommentResponse> createComment(@Valid @RequestBody CommentCreateRequest request) {
-		// TODO: 추후 JWT 로그인 기능 연동 시 수정
-		Long dummyUserId = 1L;
-		log.info("댓글 등록 API 호출 - 임시 userId: {}, postId: {}", dummyUserId, request.postId());
-		CommentResponse response = commentService.createComment(dummyUserId, request);
+	public ResponseEntity<CommentResponse> createComment(
+		@AuthenticationPrincipal UserDetails userDetails,
+		@Valid @RequestBody CommentCreateRequest request) {
+		String email = userDetails.getUsername();
+		log.info("댓글 등록 API 호출 - email: {}, postId: {}", email, request.postId());
+		CommentResponse response = commentService.createComment(email, request);
 		return ResponseEntity.status(HttpStatus.CREATED).body(response);
 	}
 
@@ -41,18 +44,21 @@ public class CommentController {
 	@PatchMapping("/{commentId}")
 	public ResponseEntity<CommentResponse> updateComment(
 		@PathVariable Long commentId,
+		@AuthenticationPrincipal UserDetails userDetails,
 		@Valid @RequestBody CommentUpdateRequest request) {
-		Long dummyUserId = 1L; // 임시
-		log.info("댓글 수정 API 호출 - commentId: {}", commentId);
-		CommentResponse response = commentService.updateComment(dummyUserId, commentId, request);
+		String email = userDetails.getUsername();
+		log.info("댓글 수정 API 호출 - email: {}, commentId: {}", email, commentId);
+		CommentResponse response = commentService.updateComment(email, commentId, request);
 		return ResponseEntity.ok(response);
 	}
 
 	@DeleteMapping("/{commentId}")
-	public ResponseEntity<Void> deleteComment(@PathVariable Long commentId) {
-		Long dummyUserId = 1L; // 임시
-		log.info("댓글 삭제 API 호출 - commentId: {}", commentId);
-		commentService.deleteComment(dummyUserId, commentId);
+	public ResponseEntity<Void> deleteComment(
+		@PathVariable Long commentId,
+		@AuthenticationPrincipal UserDetails userDetails) {
+		String email = userDetails.getUsername();
+		log.info("댓글 삭제 API 호출 - email: {}, commentId: {}", email, commentId);
+		commentService.deleteComment(email, commentId);
 		return ResponseEntity.noContent().build();
 	}
 

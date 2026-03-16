@@ -33,12 +33,12 @@ public class ProblemService {
 	private final TestCaseRepository testCaseRepository;
 	private final S3Service s3Service;
 
-	private void validateAdminRole(Long userId) {
-		User user = userRepository.findById(userId)
+	private void validateAdminRole(String adminEmail) {
+		User user = userRepository.findByEmail(adminEmail)
 			.orElseThrow(() -> new ProblemException(ProblemErrorCode.USER_NOT_FOUND));
 
 		if (user.getRole() != Role.ADMIN) {
-			log.warn("권한 없는 사용자의 접근 시도 - User ID: {}, 현재 Role: {}", userId, user.getRole());
+			log.warn("권한 없는 사용자의 접근 시도 - User Email: {}, 현재 Role: {}", adminEmail, user.getRole());
 			throw new ProblemException(ProblemErrorCode.ADMIN_ACCESS_DENIED);
 		}
 	}
@@ -46,8 +46,8 @@ public class ProblemService {
 	 * [관리자] 문제 등록
 	 */
 	@Transactional
-	public ProblemResponse createProblem(Long adminId, ProblemCreateRequest request) {
-		validateAdminRole(adminId);
+	public ProblemResponse createProblem(String adminEmail, ProblemCreateRequest request) {
+		validateAdminRole(adminEmail);
 
 		Problem problem = request.toEntity();
 
@@ -107,8 +107,8 @@ public class ProblemService {
 	 * [관리자] 문제 부분 수정
 	 */
 	@Transactional
-	public ProblemResponse updateProblem(Long adminId, Long problemId, ProblemUpdateRequest request) {
-		validateAdminRole(adminId);
+	public ProblemResponse updateProblem(String adminEmail, Long problemId, ProblemUpdateRequest request) {
+		validateAdminRole(adminEmail);
 
 		Problem problem = problemRepository.findById(problemId)
 			.orElseThrow(() -> new ProblemException(ProblemErrorCode.PROBLEM_NOT_FOUND));
@@ -156,8 +156,8 @@ public class ProblemService {
 	 * [관리자] 문제 삭제
 	 */
 	@Transactional
-	public void deleteProblem(Long adminId, Long problemId) {
-		validateAdminRole(adminId);
+	public void deleteProblem(String adminEmail, Long problemId) {
+		validateAdminRole(adminEmail);
 
 		Problem problem = problemRepository.findById(problemId)
 			.orElseThrow(() -> new ProblemException(ProblemErrorCode.PROBLEM_NOT_FOUND));
@@ -184,8 +184,8 @@ public class ProblemService {
 	 * [관리자] 특정 문제에 테스트케이스 파일 추가
 	 */
 	@Transactional
-	public void addTestCase(Long adminId, Long problemId, MultipartFile inputFile, MultipartFile outputFile) {
-		validateAdminRole(adminId);
+	public void addTestCase(String adminEmail, Long problemId, MultipartFile inputFile, MultipartFile outputFile) {
+		validateAdminRole(adminEmail);
 
 		Problem problem = problemRepository.findById(problemId)
 			.orElseThrow(() -> new ProblemException(ProblemErrorCode.PROBLEM_NOT_FOUND));
@@ -210,8 +210,8 @@ public class ProblemService {
 	 * [관리자] 특정 테스트케이스 단건 삭제
 	 */
 	@Transactional
-	public void deleteTestCase(Long adminId, Long testCaseId) {
-		validateAdminRole(adminId);
+	public void deleteTestCase(String adminEmail, Long testCaseId) {
+		validateAdminRole(adminEmail);
 
 		TestCase testCase = testCaseRepository.findById(testCaseId)
 			.orElseThrow(() -> new ProblemException(ProblemErrorCode.TESTCASE_NOT_FOUND));
@@ -225,8 +225,8 @@ public class ProblemService {
 	}
 
 	@Transactional(readOnly = true)
-	public List<TestCaseResponse> getTestCases(Long adminId, Long problemId) {
-		validateAdminRole(adminId);
+	public List<TestCaseResponse> getTestCases(String adminEmail, Long problemId) {
+		validateAdminRole(adminEmail);
 
 		Problem problem = problemRepository.findById(problemId)
 			.orElseThrow(() -> new ProblemException(ProblemErrorCode.PROBLEM_NOT_FOUND));
