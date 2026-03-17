@@ -69,9 +69,9 @@ public class CommentService {
 	public List<CommentReadResponse> getComments(Long postId) {
 		log.info("게시글 댓글 목록 조회 요청 - postId: {}", postId);
 
-		if (!postRepository.existsById(postId)) {
-			throw new BoardException(BoardErrorCode.POST_NOT_FOUND);
-		}
+//		if (!postRepository.existsById(postId)) {
+//			throw new BoardException(BoardErrorCode.POST_NOT_FOUND);
+//		}
 
 		List<Comment> comments = commentRepository.findAllByPostIdWithUser(postId);
 

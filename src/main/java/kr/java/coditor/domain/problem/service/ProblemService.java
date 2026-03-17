@@ -82,7 +82,7 @@ public class ProblemService {
 	 */
 	@Transactional(readOnly = true)
 	public ProblemResponse getProblem(Long id) {
-		Problem problem = problemRepository.findById(id)
+		Problem problem = problemRepository.findByIdWithDetails(id)
 			.orElseThrow(() -> {
 				log.warn("문제 조회 실패 - 존재하지 않는 Problem ID: {}", id);
 				return new ProblemException(ProblemErrorCode.PROBLEM_NOT_FOUND);
@@ -95,12 +95,12 @@ public class ProblemService {
 	 * [공통] 문제 전체 목록 조회
 	 */
 	@Transactional(readOnly = true)
-	public Page<ProblemResponse> getAllProblems(String keyword, Integer level, String tag, Pageable pageable) {
+	public Page<ProblemListResponse> getAllProblems(String keyword, Integer level, String tag, Pageable pageable) {
 		Page<Problem> problemPage = problemRepository.searchProblems(keyword, level, tag, pageable);
 
 		log.info("문제 목록 페이징 검색 결과 - 총 {}페이지 중 {}번째 페이지", problemPage.getTotalPages(), problemPage.getNumber());
 
-		return problemPage.map(ProblemResponse::from);
+		return problemPage.map(ProblemListResponse::from);
 	}
 
 	/**

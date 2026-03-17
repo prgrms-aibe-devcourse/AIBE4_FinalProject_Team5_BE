@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface ProblemRepository extends JpaRepository<Problem, Long> {
     List<Problem> findAllByIdIn(List<Long> ids);
@@ -28,4 +29,10 @@ public interface ProblemRepository extends JpaRepository<Problem, Long> {
 								 @Param("level") Integer level,
 								 @Param("tag") String tag,
 								 Pageable pageable);
+
+	@Query("SELECT p FROM Problem p " +
+		"LEFT JOIN FETCH p.problemTags pt " +
+		"LEFT JOIN FETCH pt.tag " +
+		"WHERE p.id = :id")
+	Optional<Problem> findByIdWithDetails(@Param("id") Long id);
 }

@@ -1,5 +1,6 @@
 package kr.java.coditor.domain.problem.controller;
 
+import kr.java.coditor.domain.problem.dto.ProblemListResponse;
 import kr.java.coditor.domain.problem.dto.ProblemResponse;
 import kr.java.coditor.domain.problem.service.ProblemService;
 import lombok.RequiredArgsConstructor;
@@ -23,7 +24,7 @@ public class ProblemController {
 
 	// 전체 문제 목록 조회
 	@GetMapping
-	public ResponseEntity<Page<ProblemResponse>> getAllProblems(
+	public ResponseEntity<Page<ProblemListResponse>> getAllProblems(
 		@RequestParam(required = false) String keyword,
 		@RequestParam(required = false) Integer level,
 		@RequestParam(required = false) String tag,

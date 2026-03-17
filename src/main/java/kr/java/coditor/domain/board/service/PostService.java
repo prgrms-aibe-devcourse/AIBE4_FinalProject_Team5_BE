@@ -62,8 +62,8 @@ public class PostService {
 	public Page<PostListResponse> getPostList(String keyword, Pageable pageable) {
 		log.info("게시글 목록 조회 요청 - keyword: {}, page: {}, size: {}", keyword, pageable.getPageNumber(), pageable.getPageSize());
 
-		return postRepository.searchPostsWithUserAndProblem(keyword, pageable)
-			.map(PostListResponse::from);
+		return postRepository.searchPostsOptimized(keyword, pageable);
+			//.map(PostListResponse::from);
 	}
 
 	@Transactional(readOnly = true)
