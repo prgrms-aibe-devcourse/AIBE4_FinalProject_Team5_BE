@@ -15,6 +15,8 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @Slf4j
 @RestController
 @RequestMapping("/coditor/posts")
@@ -36,9 +38,17 @@ public class PostController {
 	@GetMapping
 	public ResponseEntity<Page<PostListResponse>> getPostList(
 		@RequestParam(required = false) String keyword,
+		@RequestParam(required = false) Long problemId,
 		@PageableDefault(size = 10, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
-		log.info("게시글 목록 조회 API 호출 - keyword: {}", keyword);
-		Page<PostListResponse> response = postService.getPostList(keyword, pageable);
+		log.info("게시글 목록 조회 API 호출 - keyword: {}, problemId: {}", keyword, problemId);
+		Page<PostListResponse> response = postService.getPostList(keyword, problemId, pageable);
+		return ResponseEntity.ok(response);
+	}
+
+	@GetMapping("/problems")
+	public ResponseEntity<List<ProblemSimpleResponse>> getProblemsWithPosts() {
+		log.info("질문이 달린 문제 목록 API 호출");
+		List<ProblemSimpleResponse> response = postService.getProblemsWithPosts();
 		return ResponseEntity.ok(response);
 	}
 

@@ -16,6 +16,8 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
+import java.util.List;
+
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -59,11 +61,17 @@ public class PostService {
 	}
 
 	@Transactional(readOnly = true)
-	public Page<PostListResponse> getPostList(String keyword, Pageable pageable) {
-		log.info("게시글 목록 조회 요청 - keyword: {}, page: {}, size: {}", keyword, pageable.getPageNumber(), pageable.getPageSize());
+	public Page<PostListResponse> getPostList(String keyword, Long problemId, Pageable pageable) {
+		log.info("게시글 목록 조회 요청 - keyword: {}, problemId: {}, page: {}, size: {}", keyword, problemId, pageable.getPageNumber(), pageable.getPageSize());
 
-		return postRepository.searchPostsOptimized(keyword, pageable);
+		return postRepository.searchPostsOptimized(keyword, problemId, pageable);
 			//.map(PostListResponse::from);
+	}
+
+	@Transactional(readOnly = true)
+	public List<ProblemSimpleResponse> getProblemsWithPosts() {
+		log.info("질문이 달린 문제 목록 조회 요청");
+		return postRepository.findProblemsWithPosts();
 	}
 
 	@Transactional(readOnly = true)
