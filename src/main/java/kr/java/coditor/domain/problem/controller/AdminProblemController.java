@@ -60,14 +60,15 @@ public class AdminProblemController {
 
 	// 테스트케이스 파일 업로드
 	@PostMapping("/{id}/testcases")
-	public ResponseEntity<Void> addTestCase(
+	public ResponseEntity<Void> addTestCases(
 		@PathVariable Long id,
 		@AuthenticationPrincipal UserDetails userDetails,
-		@RequestPart("inputFile") MultipartFile inputFile,
-		@RequestPart("outputFile") MultipartFile outputFile) {
+		@RequestPart("inputFiles") List<MultipartFile> inputFiles,
+		@RequestPart("outputFiles") List<MultipartFile> outputFiles) {
 		String adminEmail = userDetails.getUsername();
-		log.info("API 호출: [관리자] 테스트케이스 파일 업로드 요청 - ID: {}, AdminEmail: {}", id, adminEmail);
-		problemService.addTestCase(adminEmail, id, inputFile, outputFile);
+		log.info("API 호출: [관리자] 테스트케이스 파일 업로드 요청 - ID: {}, AdminEmail: {}, Input 파일 수: {}, Output 파일 수: {}",
+			id, adminEmail, inputFiles.size(), outputFiles.size());
+		problemService.addTestCases(adminEmail, id, inputFiles, outputFiles);
 		return ResponseEntity.status(HttpStatus.CREATED).build();
 	}
 

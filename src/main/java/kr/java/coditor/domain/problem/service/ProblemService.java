@@ -184,26 +184,37 @@ public class ProblemService {
 	 * [관리자] 특정 문제에 테스트케이스 파일 추가
 	 */
 	@Transactional
-	public void addTestCase(String adminEmail, Long problemId, MultipartFile inputFile, MultipartFile outputFile) {
+	public void addTestCases(String adminEmail, Long problemId, List<MultipartFile> inputFiles, List<MultipartFile> outputFiles) {
 		validateAdminRole(adminEmail);
 
 		Problem problem = problemRepository.findById(problemId)
 			.orElseThrow(() -> new ProblemException(ProblemErrorCode.PROBLEM_NOT_FOUND));
 
-		String inputUrl = s3Service.uploadFile(inputFile, "testcases/inputs");
-		String outputUrl = s3Service.uploadFile(outputFile, "testcases/outputs");
-		//String inputUrl = "https://dummy-s3-url.com/input.txt";
-		//String outputUrl = "https://dummy-s3-url.com/output.txt";
+		if (inputFiles.size() != outputFiles.size()) {
+			throw new ProblemException(ProblemErrorCode.TESTCASE_COUNT_MISMATCH);
+		}
+		if (inputFiles.size() > 10) {
+			throw new ProblemException(ProblemErrorCode.TESTCASE_LIMIT_EXCEEDED);
+		}
 
-		TestCase testCase = TestCase.builder()
-			.problem(problem)
-			.inputUrl(inputUrl)
-			.outputUrl(outputUrl)
-			.build();
+		for (int i = 0; i < inputFiles.size(); i++) {
+			MultipartFile inputFile = inputFiles.get(i);
+			MultipartFile outputFile = outputFiles.get(i);
 
-		problem.addTestCase(testCase);
-		testCase = testCaseRepository.save(testCase);
-		log.info("테스트케이스 추가 완료 - Problem ID: {}, TestCase ID: {}", problemId, testCase.getId());
+			String inputUrl = s3Service.uploadFile(inputFile, "testcases/inputs");
+			String outputUrl = s3Service.uploadFile(outputFile, "testcases/outputs");
+
+			TestCase testCase = TestCase.builder()
+				.problem(problem)
+				.inputUrl(inputUrl)
+				.outputUrl(outputUrl)
+				.build();
+
+			problem.addTestCase(testCase);
+			testCaseRepository.save(testCase);
+		}
+
+		log.info("테스트케이스 추가 완료 - Problem ID: {}, 총 {}쌍 업로드", problemId, inputFiles.size());
 	}
 
 	/**
