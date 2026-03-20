@@ -55,4 +55,9 @@ public class Submit {
 		this.failReason = failReason;
 		this.createdAt = LocalDateTime.now();
 	}
+
+	//ai리뷰 주입용
+	public void setAiReview(String aiReview) {
+		this.aiReview = aiReview;
+	}
 }

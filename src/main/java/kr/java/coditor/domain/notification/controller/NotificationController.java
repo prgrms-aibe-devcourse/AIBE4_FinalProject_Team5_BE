@@ -50,6 +50,19 @@ public class NotificationController {
 		return ResponseEntity.noContent().build();
 	}
 
+	@PatchMapping("/{memberId}/read-all")
+	public ResponseEntity<Void> markAllAsRead(@PathVariable Long memberId) {
+		List<NotificationMessage> notifications = notificationService.getNotifications(memberId);
+
+		for (NotificationMessage notification : notifications) {
+			if (!notification.isRead()) {
+				notificationService.markAsRead(memberId, notification.getId());
+			}
+		}
+
+		return ResponseEntity.noContent().build();
+	}
+
 	@PostMapping("/test")
 	public ResponseEntity<Void> publishTest(@RequestBody NotificationPublishRequest request) {
 		NotificationMessage message = new NotificationMessage(

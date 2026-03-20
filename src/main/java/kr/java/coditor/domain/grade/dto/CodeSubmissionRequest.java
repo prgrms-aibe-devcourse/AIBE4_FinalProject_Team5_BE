@@ -6,6 +6,7 @@ public class CodeSubmissionRequest {
 	private Long memberId;
 	private String language;
 	private String sourceCode;
+	private String persona;
 
 	public CodeSubmissionRequest() {}
 
@@ -14,6 +15,7 @@ public class CodeSubmissionRequest {
 		this.memberId = memberId;
 		this.language = language;
 		this.sourceCode = sourceCode;
+		this.persona = null;
 	}
 
 	public Long getProblemId() {
@@ -31,4 +33,6 @@ public class CodeSubmissionRequest {
 	public String getSourceCode() {
 		return sourceCode;
 	}
+
+	public String getPersona() { return persona; }
 }
