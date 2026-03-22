@@ -56,8 +56,8 @@ jobs:
 
                       echo "GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }}" >> .env
                       echo "GOOGLE_CLIENT_SECRET=${{ secrets.GOOGLE_CLIENT_SECRET }}" >> .env
-                      echo "GITHUB_CLIENT_ID=${{ secrets.GITHUB_CLIENT_ID }}" >> .env
-                      echo "GITHUB_CLIENT_SECRET=${{ secrets.GITHUB_CLIENT_SECRET }}" >> .env
+                      echo "GH_CLIENT_ID=${{ secrets.GH_CLIENT_ID }}" >> .env
+                      echo "GH_CLIENT_SECRET=${{ secrets.GH_CLIENT_SECRET }}" >> .env
 
                       echo "MAIL_USERNAME=${{ secrets.MAIL_USERNAME }}" >> .env
                       echo "MAIL_PASSWORD=${{ secrets.MAIL_PASSWORD }}" >> .env

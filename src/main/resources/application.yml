@@ -61,8 +61,8 @@ spring:
                             - email
                             - profile
                     github:
-                        client-id: ${GITHUB_CLIENT_ID}
-                        client-secret: ${GITHUB_CLIENT_SECRET}
+                        client-id: ${GH_CLIENT_ID}
+                        client-secret: ${GH_CLIENT_SECRET}
                         scope:
                             - user:email
                             - read:user
