@@ -60,12 +60,14 @@ spring:
                         scope:
                             - email
                             - profile
+                        redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}"
                     github:
                         client-id: ${GH_CLIENT_ID}
                         client-secret: ${GH_CLIENT_SECRET}
                         scope:
                             - user:email
                             - read:user
+                        redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}"
 
     mail:
         host: smtp.gmail.com
