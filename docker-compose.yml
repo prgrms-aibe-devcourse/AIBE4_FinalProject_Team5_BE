@@ -4,7 +4,7 @@ services:
     mysql:
         image: mysql:8.0
         container_name: coditor-db
-        profiles: ["aws", "local"]
+        profiles: ["local"]  #rds사용예정이었으나 시간 부족으로 aiven 그대로 사용
         ports:
             - "3306:3306"
         environment:
@@ -38,8 +38,8 @@ services:
             - "5672:5672"
             - "15672:15672"
         environment:
-            RABBITMQ_DEFAULT_USER: ${RABBITMQ_DEFAULT_USER}
-            RABBITMQ_DEFAULT_PASS: ${RABBITMQ_DEFAULT_PASS}
+            RABBITMQ_DEFAULT_USER: guest
+            RABBITMQ_DEFAULT_PASS: guest
         volumes:
             - ./infra/data/rabbitmq:/var/lib/rabbitmq
         restart: always
@@ -50,13 +50,13 @@ services:
         profiles: ["aws", "local"]
         ports:
             - "8080:8080"
+        env_file:
+            - .env
         environment:
             SPRING_PROFILES_ACTIVE: prod
-            SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/${MYSQL_DATABASE}?serverTimezone=Asia/Seoul
-            SPRING_RABBITMQ_HOST: rabbitmq
-            SPRING_DATA_REDIS_HOST: redis
+            REDIS_HOST: redis
+            RABBITMQ_HOST: rabbitmq
         depends_on:
-            - mysql
             - redis
             - rabbitmq
         restart: always
@@ -65,17 +65,15 @@ services:
     coditor-worker:
         image: ${DOCKER_USERNAME}/coditor-worker:latest
         container_name: coditor-worker
-        profiles: ["worker", "local"]
+        profiles: ["worker"]
+        env_file:
+            - .env
         environment:
             SPRING_PROFILES_ACTIVE: worker
-            SPRING_DATASOURCE_URL: jdbc:mysql://${AWS_PUBLIC_IP:-mysql}:3306/${MYSQL_DATABASE}?serverTimezone=Asia/Seoul
-            SPRING_RABBITMQ_HOST: ${AWS_PUBLIC_IP:-rabbitmq}
-            SPRING_DATA_REDIS_HOST: ${AWS_PUBLIC_IP:-redis}
+            # 로컬 채점서버는 EC2로 접근
+            REDIS_HOST: ${AWS_EC2_HOST}
+            RABBITMQ_HOST: ${AWS_EC2_HOST}
         volumes:
             - /var/run/docker.sock:/var/run/docker.sock
             - ./temp_submissions:/app/temp_submissions
-        depends_on:
-            - mysql
-            - redis
-            - rabbitmq
         restart: always

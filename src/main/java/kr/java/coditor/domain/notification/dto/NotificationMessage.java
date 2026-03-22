@@ -19,8 +19,8 @@ public class NotificationMessage implements Serializable {
 	@JsonProperty("targetUrl")
 	private String targetUrl;
 
-	@JsonProperty("read")
-	private boolean read;
+	@JsonProperty("isRead")
+	private boolean isRead;
 
 	@JsonProperty("createdAt")
 	private Long createdAt;
@@ -35,7 +35,7 @@ public class NotificationMessage implements Serializable {
 		this.memberId = memberId;
 		this.message = message;
 		this.targetUrl = targetUrl;
-		this.read = false;
+		this.isRead = false;
 		this.createdAt = System.currentTimeMillis();
 	}
 
@@ -44,7 +44,7 @@ public class NotificationMessage implements Serializable {
 	public Long getMemberId() { return memberId; }
 	public String getMessage() { return message; }
 	public String getTargetUrl() { return targetUrl; }
-	public boolean isRead() { return read; }
+	public boolean isRead() { return isRead; }
 	public Long getCreatedAt() { return createdAt; }
 
 	// --- Setters ---
@@ -52,6 +52,6 @@ public class NotificationMessage implements Serializable {
 	public void setMemberId(Long memberId) { this.memberId = memberId; }
 	public void setMessage(String message) { this.message = message; }
 	public void setTargetUrl(String targetUrl) { this.targetUrl = targetUrl; }
-	public void setRead(boolean read) { this.read = read; }
+	public void setRead(boolean read) { this.isRead = read; }
 	public void setCreatedAt(Long createdAt) { this.createdAt = createdAt; }
 }

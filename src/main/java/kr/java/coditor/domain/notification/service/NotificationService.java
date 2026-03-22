@@ -124,6 +124,29 @@ public class NotificationService {
 		return false;
 	}
 
+	public void markAllAsRead(Long memberId) {
+		String key = notificationKey(memberId);
+
+		List<String> values = stringRedisTemplate.opsForList().range(key, 0, -1);
+
+		if (values == null || values.isEmpty()) {
+			return;
+		}
+
+		for (int i = 0; i < values.size(); i++) {
+			NotificationMessage message = readValue(values.get(i));
+
+			if (message == null) {
+				continue;
+			}
+
+			if (!message.isRead()) {
+				message.setRead(true);
+				stringRedisTemplate.opsForList().set(key, i, writeValue(message));
+			}
+		}
+	}
+
 	private NotificationMessage readValue(String json) {
 		try {
 			return objectMapper.readValue(json, NotificationMessage.class);
