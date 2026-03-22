@@ -10,7 +10,6 @@ import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
-import java.util.Comparator;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
@@ -34,6 +33,8 @@ import kr.java.coditor.domain.problem.entity.TestCase;
 import kr.java.coditor.domain.problem.repository.ProblemRepository;
 import kr.java.coditor.domain.problem.repository.TestCaseRepository;
 import kr.java.coditor.global.config.RabbitMqConfig;
+import org.springframework.util.FileSystemUtils;
+
 
 @Service
 public class ScoringConsumer {
@@ -145,6 +146,7 @@ public class ScoringConsumer {
 						"docker", "run", "--rm",
 						"--name", containerName,
 						"--memory=" + problem.getMemoryLimit() + "m",
+						"--network", "none", //피드백 반영사항 ( 네트워크 차단으로 마운트 읽기쓰기만 가능한 상태 )
 						"-v", hostDirPath + ":/app",
 						"-w", "/app",
 						strategy.getDockerImage(),
@@ -319,11 +321,9 @@ public class ScoringConsumer {
 
 	private void deleteDirectory(Path dirPath) {
 		try {
-			if (!Files.exists(dirPath)) return;
-			Files.walk(dirPath)
-				.sorted(Comparator.reverseOrder())
-				.map(Path::toFile)
-				.forEach(File::delete);
+			if (Files.exists(dirPath)) {
+				FileSystemUtils.deleteRecursively(dirPath);
+			}
 		} catch (IOException e) {
 			log.warn("임시 디렉토리 삭제 실패: {}", dirPath, e);
 		}

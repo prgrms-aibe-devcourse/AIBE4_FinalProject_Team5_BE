@@ -1,0 +1,103 @@
+server:
+    port: 8080
+    servlet:
+        encoding:
+            charset: UTF-8
+            enabled: true
+            force: true
+
+spring:
+    application:
+        name: coditor
+
+    datasource:
+        driver-class-name: com.mysql.cj.jdbc.Driver
+        url: ${DB_URL}
+        username: ${DB_USERNAME}
+        password: ${DB_PASSWORD}
+
+    jpa:
+        hibernate:
+            ddl-auto: update #validate
+        show-sql: true
+        properties:
+            hibernate:
+                format_sql: true
+
+    data:
+        redis:
+            host: ${REDIS_HOST:localhost}
+            port: 6379
+
+    rabbitmq:
+        host: ${RABBITMQ_HOST:localhost}
+        port: 5672
+        username: guest
+        password: guest
+        listener:
+            simple:
+                concurrency: 1
+                max-concurrency: 8
+                prefetch: 1
+
+    cloud:
+        aws:
+            s3:
+                bucket: coditor-test-demo-bucket
+            credentials:
+                access-key: ${AWS_ACCESS_KEY}
+                secret-key: ${AWS_SECRET_KEY}
+            region:
+                static: ap-northeast-2
+
+    security:
+        oauth2:
+            client:
+                registration:
+                    google:
+                        client-id: ${GOOGLE_CLIENT_ID}
+                        client-secret: ${GOOGLE_CLIENT_SECRET}
+                        scope:
+                            - email
+                            - profile
+                    github:
+                        client-id: ${GH_CLIENT_ID}
+                        client-secret: ${GH_CLIENT_SECRET}
+                        scope:
+                            - user:email
+                            - read:user
+
+    mail:
+        host: smtp.gmail.com
+        port: 587
+        username: ${MAIL_USERNAME}
+        password: ${MAIL_PASSWORD}
+        properties:
+            mail:
+                smtp:
+                    auth: true
+                    starttls:
+                        enable: true
+                    connectiontimeout: 5000
+                    timeout: 5000
+
+management:
+    endpoints:
+        web:
+            exposure:
+                include: prometheus
+    endpoint:
+        prometheus:
+            enabled: true
+    prometheus:
+        metrics:
+            export:
+                enabled: true
+
+gemini:
+    api:
+        key: ${GEMINI_API_KEY}
+        url: https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent
+
+jwt:
+    secret: ${JWT_SECRET}

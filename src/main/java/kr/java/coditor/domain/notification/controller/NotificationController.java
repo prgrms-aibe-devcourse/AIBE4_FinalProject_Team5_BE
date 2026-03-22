@@ -52,14 +52,7 @@ public class NotificationController {
 
 	@PatchMapping("/{memberId}/read-all")
 	public ResponseEntity<Void> markAllAsRead(@PathVariable Long memberId) {
-		List<NotificationMessage> notifications = notificationService.getNotifications(memberId);
-
-		for (NotificationMessage notification : notifications) {
-			if (!notification.isRead()) {
-				notificationService.markAsRead(memberId, notification.getId());
-			}
-		}
-
+		notificationService.markAllAsRead(memberId);
 		return ResponseEntity.noContent().build();
 	}
 
