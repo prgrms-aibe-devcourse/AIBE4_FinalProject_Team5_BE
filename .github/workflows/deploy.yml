@@ -18,6 +18,9 @@ jobs:
                   java-version: '17'
                   distribution: 'corretto'
 
+            - name: Grant execute permission for gradlew
+              run: chmod +x gradlew
+
             - name: Build with Gradle
               run: ./gradlew clean build -x test
 
@@ -42,7 +45,6 @@ jobs:
                       cd /home/ubuntu/coditor
                       git pull origin main
 
-                      # 🌟 최신 application.yml에 맞춘 .env 파일 생성
                       echo "DB_URL=${{ secrets.DB_URL }}" > .env
                       echo "DB_USERNAME=${{ secrets.DB_USERNAME }}" >> .env
                       echo "DB_PASSWORD=${{ secrets.DB_PASSWORD }}" >> .env
