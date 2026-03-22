@@ -42,34 +42,41 @@ jobs:
                   username: ${{ secrets.AWS_EC2_USERNAME }}
                   key: ${{ secrets.AWS_EC2_KEY }}
                   script: |
+                      # 1. 프로젝트 폴더 체크 및 이동
                       if [ ! -d "/home/ubuntu/coditor" ]; then
                         git clone https://github.com/prgrms-aibe-devcourse/AIBE4_FinalProject_Team5_BE.git /home/ubuntu/coditor
                       fi
                       cd /home/ubuntu/coditor
                       git pull origin main
 
-                      echo "DB_URL=${{ secrets.DB_URL }}" > .env
+                      # 2. .env 파일 생성 (누락된 변수들 추가)
+                      echo "DOCKER_USERNAME=${{ secrets.DOCKER_USERNAME }}" > .env
+                      echo "DB_URL=${{ secrets.DB_URL }}" >> .env
                       echo "DB_USERNAME=${{ secrets.DB_USERNAME }}" >> .env
                       echo "DB_PASSWORD=${{ secrets.DB_PASSWORD }}" >> .env
 
-                      # 도커 브릿지 게이트웨이 IP (도커 컨테이너가 EC2 호스트를 바라보게 함)
+                      # MySQL 관련 변수 추가 (로그의 WARN 해결)
+                      echo "MYSQL_DATABASE=${{ secrets.MYSQL_DATABASE }}" >> .env
+                      echo "MYSQL_USER=${{ secrets.MYSQL_USER }}" >> .env
+                      echo "MYSQL_PASSWORD=${{ secrets.MYSQL_PASSWORD }}" >> .env
+                      echo "MYSQL_ROOT_PASSWORD=${{ secrets.MYSQL_ROOT_PASSWORD }}" >> .env
+
+                      # 인프라 및 외부 API 설정
                       echo "REDIS_HOST=172.17.0.1" >> .env
                       echo "RABBITMQ_HOST=172.17.0.1" >> .env
-
                       echo "AWS_ACCESS_KEY=${{ secrets.AWS_ACCESS_KEY }}" >> .env
                       echo "AWS_SECRET_KEY=${{ secrets.AWS_SECRET_KEY }}" >> .env
-
                       echo "GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }}" >> .env
                       echo "GOOGLE_CLIENT_SECRET=${{ secrets.GOOGLE_CLIENT_SECRET }}" >> .env
                       echo "GH_CLIENT_ID=${{ secrets.GH_CLIENT_ID }}" >> .env
                       echo "GH_CLIENT_SECRET=${{ secrets.GH_CLIENT_SECRET }}" >> .env
-
                       echo "MAIL_USERNAME=${{ secrets.MAIL_USERNAME }}" >> .env
                       echo "MAIL_PASSWORD=${{ secrets.MAIL_PASSWORD }}" >> .env
-
                       echo "GEMINI_API_KEY=${{ secrets.GEMINI_API_KEY }}" >> .env
                       echo "JWT_SECRET=${{ secrets.JWT_SECRET }}" >> .env
 
-                      docker compose --profile aws pull
-                      docker compose --profile aws up -d
-                      docker image prune -f
+                      # 3. 도커 실행 (기존 컨테이너 정리 후 재시작)
+                      sudo docker compose --profile aws down
+                      sudo docker compose --profile aws pull
+                      sudo docker compose --profile aws up -d
+                      sudo docker image prune -f
