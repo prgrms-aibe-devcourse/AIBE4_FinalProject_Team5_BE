@@ -60,8 +60,7 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
 
         refreshTokenRepository.save(refreshToken);
 
-        // 메인 페이지(http://localhost:5173/)로 리다이렉트
-        String targetUrl = UriComponentsBuilder.fromUriString("http://localhost:5173/")
+        String targetUrl = UriComponentsBuilder.fromUriString("https://www.coditor.xyz/")
                 .queryParam("accessToken", tokenResponseDto.getAccessToken())
                 .queryParam("refreshToken", tokenResponseDto.getRefreshToken())
 				.queryParam("nickname", user.getNickname())

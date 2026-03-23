@@ -20,8 +20,7 @@ public class OAuth2AuthenticationFailureHandler extends SimpleUrlAuthenticationF
         String errorMessage = exception.getLocalizedMessage();
         String encodedErrorMessage = URLEncoder.encode(errorMessage, StandardCharsets.UTF_8);
 
-        // 메인 페이지(http://localhost:5173/)로 리다이렉트
-        String targetUrl = UriComponentsBuilder.fromUriString("http://localhost:5173/")
+        String targetUrl = UriComponentsBuilder.fromUriString("https://www.coditor.xyz/")
                 .queryParam("error", encodedErrorMessage)
                 .build().toUriString();
 
