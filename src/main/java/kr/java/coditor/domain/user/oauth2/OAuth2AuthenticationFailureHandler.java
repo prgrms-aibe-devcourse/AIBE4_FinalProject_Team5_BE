@@ -18,10 +18,13 @@ public class OAuth2AuthenticationFailureHandler extends SimpleUrlAuthenticationF
     @Override
     public void onAuthenticationFailure(HttpServletRequest request, HttpServletResponse response, AuthenticationException exception) throws IOException, ServletException {
         String errorMessage = exception.getLocalizedMessage();
+        if (errorMessage == null) {
+            errorMessage = "Social login failed";
+        }
         String encodedErrorMessage = URLEncoder.encode(errorMessage, StandardCharsets.UTF_8);
 
-        // 메인 페이지(http://localhost:5173/)로 리다이렉트
-        String targetUrl = UriComponentsBuilder.fromUriString("http://localhost:5173/")
+        // 배포된 프론트엔드 로그인 페이지로 리다이렉트
+        String targetUrl = UriComponentsBuilder.fromUriString("https://www.coditor.xyz")
                 .queryParam("error", encodedErrorMessage)
                 .build().toUriString();
 
