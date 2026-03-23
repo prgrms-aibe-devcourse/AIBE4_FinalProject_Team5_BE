@@ -60,8 +60,8 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
 
         refreshTokenRepository.save(refreshToken);
 
-        // 배포된 프론트엔드 로그인 페이지로 리다이렉트
-        String targetUrl = UriComponentsBuilder.fromUriString("https://www.coditor.xyz")
+        // 배포된 프론트엔드 로그인 페이지로 리다이렉트 (경로 수정: /login 추가)
+        String targetUrl = UriComponentsBuilder.fromUriString("https://www.coditor.xyz/login")
                 .queryParam("accessToken", tokenResponseDto.getAccessToken())
                 .queryParam("refreshToken", tokenResponseDto.getRefreshToken())
 				.queryParam("nickname", user.getNickname())

@@ -24,7 +24,7 @@ public class OAuth2AuthenticationFailureHandler extends SimpleUrlAuthenticationF
         String encodedErrorMessage = URLEncoder.encode(errorMessage, StandardCharsets.UTF_8);
 
         // 배포된 프론트엔드 로그인 페이지로 리다이렉트
-        String targetUrl = UriComponentsBuilder.fromUriString("https://www.coditor.xyz")
+        String targetUrl = UriComponentsBuilder.fromUriString("https://www.coditor.xyz/login")
                 .queryParam("error", encodedErrorMessage)
                 .build().toUriString();
 
